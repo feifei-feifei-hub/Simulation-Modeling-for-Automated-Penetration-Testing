@@ -1,4 +1,3 @@
-```markdown
 # Network Topology Generator
 
 This repository contains scripts to generate various types of network topologies, both hypothetical and authentic, with different defense and detection capabilities. Below are the instructions to set up and run the code.
@@ -74,5 +73,4 @@ zlib                      1.2.13
   - **Generation**: One standard network is generated for each network setting combination, along with its changes over T=100/1000 time units.
   - **Naming Convention**: `{total_number_of_nodes}_defense_type_{1or2or3}_{network_type{standard_network_variation}}/t{time_unit}`.
 
-```
 
