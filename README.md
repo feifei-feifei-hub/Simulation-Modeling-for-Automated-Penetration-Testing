@@ -61,7 +61,7 @@ zlib                      1.2.13
 ## 3. Network Datasets
 
 ### Download Link:
-- **Baidu Netdisk**: [https:……](#)
+- **Baidu Netdisk**: [https://pan.baidu.com/s/1nUFRID4UuAHTjzUcSzhkGg](#)
 - **Extraction Code**: `vufi`
 
 ### Description:
@@ -71,6 +71,6 @@ zlib                      1.2.13
 
 - **Dynamic Networks**:
   - **Generation**: One standard network is generated for each network setting combination, along with its changes over T=100/1000 time units.
-  - **Naming Convention**: `{total_number_of_nodes}_defense_type_{1or2or3}_{network_type{standard_network_variation}}/t{time_unit}`.
+  - **Naming Convention**: `{total_number_of_nodes}_{network_type{standard_network_variation}}/t{time_unit}`.
 
 

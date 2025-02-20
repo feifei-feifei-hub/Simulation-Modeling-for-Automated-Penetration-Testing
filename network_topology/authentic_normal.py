@@ -19,7 +19,7 @@ import pandas as pd
 
  
 # 先定义局域网、在定义局域网内的交换机，交换机和上一层的交换机相连接，上一层交换机再和上一层相连接
-def partitioned_layered_garph_generatin(layers,total,layers_percent,Lan_num,switchs_percent,pro,defense_type):
+def partitioned_layered_garph_generatin(layers,total,layers_percent,Lan_num,switchs_percent,pro):
     user = []
     with open('/root/feifei/8_network_generator/data_cve/user.txt', 'r', encoding='utf-8') as file:
         for line in file:
@@ -337,7 +337,7 @@ def partitioned_layered_garph_generatin(layers,total,layers_percent,Lan_num,swit
     return G#生成了网络图
 
 
-def Dy_partitioned_layered_garph_generatin(layers,total,layers_percent,Lan_num,switchs_percent,pro,defense_type,T):
+def Dy_partitioned_layered_garph_generatin(layers,total,layers_percent,Lan_num,switchs_percent,pro,T):
     user = []
     with open('/root/feifei/8_network_generator/data_cve/user.txt', 'r', encoding='utf-8') as file:
         for line in file:
@@ -705,7 +705,7 @@ if __name__ == '__main__':
     # save(graph, "./graph.json")
     #设置生成数值模拟网络类型，defense_type = 1,2,3
     # defense_type = 1
-    defense_type = 2
+    # defense_type = 2
     # defense_type = 3
 
     # 静态\动态网络的生成及保存
@@ -730,21 +730,21 @@ if __name__ == '__main__':
     # Lan_num = [5,2,2,1]
     # switchs_percent=[0.2,0.2,0.2,0.2]
     #生成网络
-    for c in range(10):
+    for c in range(1):
         pro = 0.65#同一个局域网内部的节点哟多大的可能性拥有同一个cve
         # np.random.seed(2077)
         if static == 1:#静态网络
-            graph = partitioned_layered_garph_generatin(layers,total,layers_percent,Lan_num,switchs_percent,pro,defense_type)
-            z = (f"./authentic_net/partitioned_layered/static/{len(graph.nodes())}_defensetype_{defense_type}_net{c}.gpickle")
+            graph = partitioned_layered_garph_generatin(layers,total,layers_percent,Lan_num,switchs_percent,pro)
+            z = (f"./authentic_net/partitioned_layered/static/{len(graph.nodes())}_net{c}.gpickle")
             with open(z, 'wb') as f:
                 pickle.dump(graph, f, pickle.HIGHEST_PROTOCOL)
         #print(graph.nodes(data = True))
         #nx.write_gpickle(graph, "test_1000_2.gpickle")
         else:#动态网络
-            t_end = 1000
-            Gy_graphs = Dy_partitioned_layered_garph_generatin(layers,total,layers_percent,Lan_num,switchs_percent,pro,defense_type, T = t_end)
+            t_end = 100
+            Gy_graphs = Dy_partitioned_layered_garph_generatin(layers,total,layers_percent,Lan_num,switchs_percent,pro, T = t_end)
             for i in range(len(Gy_graphs)):
-                z = (f"./authentic_net/partitioned_layered/dynamic/{len(Gy_graphs[0].nodes())}_defensetype_{defense_type}_net{c}/t{i}.gpickle")
+                z = (f"./authentic_net/partitioned_layered/dynamic/{len(Gy_graphs[0].nodes())}_net{c}/t{i}.gpickle")
                 os.makedirs(os.path.dirname(z), exist_ok=True)
                 with open(z, 'wb') as f:
                     pickle.dump(Gy_graphs[i], f, pickle.HIGHEST_PROTOCOL)

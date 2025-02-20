@@ -15,7 +15,7 @@ sys.path.append(os.getcwd())
 # from data_cve.CVE_detail import Read_data   
 #核心交换机数量core_switch_num,汇聚交换机数量aggregation_switch_num,接入交换机数量edge_switch_num,主机数量host_num
 #每个核心交换机连接的汇聚交换机数量core_aggregation={0:6},每个汇聚交换机连接的接入交换机数量aggregation_edge={0:2,1:2,2:2,3:2,4:2,5:2}
-def tree(core_switch_num,core_aggregation, aggregation_switch_num,aggregation_edge,edge_switch_num,host_num,pro,defense_type):
+def tree(core_switch_num,core_aggregation, aggregation_switch_num,aggregation_edge,edge_switch_num,host_num,pro):
     #读取各个文件
     user = []
     with open('/root/feifei/8_network_generator/data_cve/user.txt', 'r', encoding='utf-8') as file:
@@ -145,6 +145,9 @@ def tree(core_switch_num,core_aggregation, aggregation_switch_num,aggregation_ed
             G_H.nodes[all_node_now]["lan_id"] = str(count)
             G_H.nodes[all_node_now]["system"] = random.choice(["os_windows","os_linux","os_ios","os_mac","os_unix"])
             pro_type = random.random()
+            G_H.nodes[all_node_now]["software_version"] = []
+            G_H.nodes[all_node_now]["port_server_version"] = []
+
             if is_domain:
                 #是域主机
                 G_H.nodes[all_node_now]["system"] = "os_windows"
@@ -204,7 +207,7 @@ def tree(core_switch_num,core_aggregation, aggregation_switch_num,aggregation_ed
                     if len(all_cve[m]["affectedversion"]) != 0:
                         version = random.choice(all_cve[m]["affectedversion"])
                     G_H.nodes[all_node_now]["software_version"].append(version)
-                ports= ports_
+                ports= copy.deepcopy(ports_)
                 for g in firewall_port_cve_:
                     if len(all_cve[g]["affectedversion"]) != 0:
                         version = random.choice(all_cve[g]["affectedversion"])
@@ -239,21 +242,18 @@ def tree(core_switch_num,core_aggregation, aggregation_switch_num,aggregation_ed
                 for j in range(random.randint(1,2)):
                     account.add((random.choice(user),random.choice(password),random.choice(["root","admin","user"])))
                 G_H.nodes[all_node_now]["account"] = list(account)
-                
             all_node_now += 1
         count += 1
-
-
         for j in G_H.nodes():
             for s in G_H.nodes():
                 if j != s:
                     G_H.add_edge(j,s)
         #将子网中的节点添加到总网络中
-        G_authentic_tree = nx.compose(G,G_H)
+        G = nx.compose(G,G_H)
     # G_number = set_node_attribute(G, defense_type)
-    return G_authentic_tree
+    return G
 
-def Dy_tree(core_switch_num,core_aggregation, aggregation_switch_num,aggregation_edge,edge_switch_num,host_num,pro,defense_type, T = 1000):
+def Dy_tree(core_switch_num,core_aggregation, aggregation_switch_num,aggregation_edge,edge_switch_num,host_num,pro, T = 1000):
     user = []
     with open('/root/feifei/8_network_generator/data_cve/user.txt', 'r', encoding='utf-8') as file:
         for line in file:
@@ -385,6 +385,8 @@ def Dy_tree(core_switch_num,core_aggregation, aggregation_switch_num,aggregation
             G_H.nodes[all_node_now]["type"] = "server"
             G_H.nodes[all_node_now]["lan_id"] = str(count)
             G_H.nodes[all_node_now]["system"] = random.choice(["os_windows","os_linux","os_ios","os_mac","os_unix"])
+            G_H.nodes[all_node_now]["software_version"] = []
+            G_H.nodes[all_node_now]["port_server_version"] = []
             pro_type = random.random()
             if is_domain:
                 #是域主机
@@ -443,7 +445,7 @@ def Dy_tree(core_switch_num,core_aggregation, aggregation_switch_num,aggregation
                     if len(all_cve[m]["affectedversion"]) != 0:
                         version = random.choice(all_cve[m]["affectedversion"])
                     G_H.nodes[all_node_now]["software_version"].append(version)
-                ports= ports_
+                ports= copy.deepcopy(ports_)
                 for g in firewall_port_cve_:
                     if len(all_cve[g]["affectedversion"]) != 0:
                         version = random.choice(all_cve[g]["affectedversion"])
@@ -485,10 +487,11 @@ def Dy_tree(core_switch_num,core_aggregation, aggregation_switch_num,aggregation
                 if j != s:
                     G_H.add_edge(j,s)
         #将子网中的节点添加到总网络中
-        G_number = nx.compose(G,G_H)
+        G = nx.compose(G,G_H)
 
     # G_number = set_node_attribute(G, defense_type)
     #动态网络的变化
+    G_number = copy.deepcopy(G)
     Dy_G.append(G_number)#保存0时刻的网络
     #获取主机类型的节点
     all_nodes = set(G_number.nodes())
@@ -610,12 +613,12 @@ def load(fname):
 
 if __name__ == '__main__':
     #节点规模为10
-    core_switch_num =1
-    core_aggregation={0:2}
-    aggregation_switch_num = sum(core_aggregation.values())
-    aggregation_edge={0:2,1:2}
-    edge_switch_num = sum(aggregation_edge.values())
-    host_num = 8
+    # core_switch_num =1
+    # core_aggregation={0:2}
+    # aggregation_switch_num = sum(core_aggregation.values())
+    # aggregation_edge={0:2,1:2}
+    # edge_switch_num = sum(aggregation_edge.values())
+    # host_num = 8
 
     # #节点规模为100
     # core_switch_num =1
@@ -626,40 +629,40 @@ if __name__ == '__main__':
     # host_num = 90
 
     #节点规模为1000
-    # core_switch_num =1#核心交换机数量,树的根节点
-    # core_aggregation={0:7}#每个核心交换机连接的汇聚交换机数量
-    # aggregation_switch_num = sum(core_aggregation.values())#汇聚交换机数量
-    # aggregation_edge={0:7,1:3,2:7,3:7,4:6,5:6,6:7}#每个汇聚交换机连接的接入交换机数量
-    # ##接入交换机数量是aggregation_edge的所有键值的和
-    # edge_switch_num = sum(aggregation_edge.values())#接入交换机数量
-    # host_num = 950
+    core_switch_num =1#核心交换机数量,树的根节点
+    core_aggregation={0:7}#每个核心交换机连接的汇聚交换机数量
+    aggregation_switch_num = sum(core_aggregation.values())#汇聚交换机数量
+    aggregation_edge={0:7,1:3,2:7,3:7,4:6,5:6,6:7}#每个汇聚交换机连接的接入交换机数量
+    ##接入交换机数量是aggregation_edge的所有键值的和
+    edge_switch_num = sum(aggregation_edge.values())#接入交换机数量
+    host_num = 950
 
 
 
     pro = 0.65#存在多大的概率在同一个局域网内有同一个漏洞
     # np.random.seed(2077)
     #设置生成数值模拟网络类型，defense_type = 1,2,3
-    defense_type = 1
+    # defense_type = 1
     # defense_type = 2
     # defense_type = 3
     #设置网络是静态的还是动态的，static = 0，1  0表示动态，1表示静态
 
     # 静态\动态网络的生成及保存
     static = 0
-    for c in range(10):
+    for c in range(1):
         if static == 1:#静态网络
-            graph = tree(core_switch_num,core_aggregation, aggregation_switch_num,aggregation_edge,edge_switch_num,host_num,pro,defense_type)
+            graph = tree(core_switch_num,core_aggregation, aggregation_switch_num,aggregation_edge,edge_switch_num,host_num,pro)
     # nx.draw(graph, with_labels=True, alpha=0.8, node_size=500)
     # plt.savefig("123.png")
-            z = (f"./authentic_net/tree/static/{len(graph.nodes())}_defensetype_{defense_type}_tree{c}.gpickle")
+            z = (f"./authentic_net/tree/static/{len(graph.nodes())}_tree{c}.gpickle")
             with open(z, 'wb') as f:
                 pickle.dump(graph, f, pickle.HIGHEST_PROTOCOL)
         else:#动态网络
             t_start = 0
             t_end = 1000
-            Gy_graphs = Dy_tree(core_switch_num,core_aggregation, aggregation_switch_num,aggregation_edge,edge_switch_num,host_num,pro,defense_type, T = t_end)
+            Gy_graphs = Dy_tree(core_switch_num,core_aggregation, aggregation_switch_num,aggregation_edge,edge_switch_num,host_num,pro, T = t_end)
             for i in range(len(Gy_graphs)):
-                z = (f"./authentic_net/tree/dynamic/{len(Gy_graphs[0].nodes())}_defensetype_{defense_type}_tree{c}/t{i}.gpickle")
+                z = (f"./authentic_net/tree/dynamic/{len(Gy_graphs[0].nodes())}_defensetype_tree{c}/t{i}.gpickle")
                 os.makedirs(os.path.dirname(z), exist_ok=True)
                 with open(z, 'wb') as f:
                     pickle.dump(Gy_graphs[i], f, pickle.HIGHEST_PROTOCOL)

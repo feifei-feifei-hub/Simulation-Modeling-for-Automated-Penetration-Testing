@@ -8,7 +8,7 @@ import pandas as pd
 import json
 from authentic_utils import domain_switch_cve,domain_host_cve,firewall_cve,common_host_cve,common_switch_cve,common_database_cve,commen_change,host_work_off,host_error_off,host_work_on,host_error_on,set_node_attribute
 
-def generate_fat_tree(k,defense_type,pro):
+def generate_fat_tree(k,pro):
     user = []
     with open('/root/feifei/8_network_generator/data_cve/user.txt', 'r', encoding='utf-8') as file:
         for line in file:
@@ -271,7 +271,7 @@ def generate_fat_tree(k,defense_type,pro):
             G2.nodes[i]["account"] = list(account)
     return G2#生成了网络图
 
-def Dy_generate_fat_tree(k,defense_type,pro,T):
+def Dy_generate_fat_tree(k,pro,T):
     user = []
     with open('/root/feifei/8_network_generator/data_cve/user.txt', 'r', encoding='utf-8') as file:
         for line in file:
@@ -586,7 +586,7 @@ def Dy_generate_fat_tree(k,defense_type,pro,T):
 
 if __name__ == '__main__':
     #设置生成数值模拟网络类型，defense_type = 1,2,3
-    defense_type = 1
+    # defense_type = 1
     # defense_type = 2
     # defense_type = 3
 
@@ -603,17 +603,17 @@ if __name__ == '__main__':
     #节点规模为1000
     # K = 14
     #生成网络
-    for c in range(10):
+    for c in range(1):
         if static == 1:#静态网络
-            graph = generate_fat_tree(K,defense_type,pro)
-            z = (f"./number_net/fattree/static/{len(graph.nodes())}_defensetype_{defense_type}_tree{c}.gpickle")
+            graph = generate_fat_tree(K,pro)
+            z = (f"./authentic_net/fattree/static/{len(graph.nodes())}_fattree{c}.gpickle")
             with open(z, 'wb') as f:
                 pickle.dump(graph, f, pickle.HIGHEST_PROTOCOL)
         else:#动态网络
-            t_end = 1000
-            Gy_graphs = Dy_generate_fat_tree(K,defense_type,pro, T = t_end)
+            t_end = 100
+            Gy_graphs = Dy_generate_fat_tree(K,pro, T = t_end)
             for i in range(len(Gy_graphs)):
-                z = (f"./number_net/fattree/dynamic/{len(Gy_graphs[0].nodes())}_defensetype_{defense_type}_tree{c}/t{i}.gpickle")
+                z = (f"./authentic_net/fattree/dynamic/{len(Gy_graphs[0].nodes())}_fattree{c}/t{i}.gpickle")
                 os.makedirs(os.path.dirname(z), exist_ok=True)
                 with open(z, 'wb') as f:
                     pickle.dump(Gy_graphs[i], f, pickle.HIGHEST_PROTOCOL)

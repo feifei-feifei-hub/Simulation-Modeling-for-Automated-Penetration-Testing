@@ -40,7 +40,7 @@ Authentic network：以树状网络为例
 设置网络参数、静态/动态网络参数(动态网络还需要设置终止时间)  运行authentic_tree.py: python authentic_tree.py
 3. 网络数据集
 百度网盘链接：
-https:……
+https: https://pan.baidu.com/s/1nUFRID4UuAHTjzUcSzhkGg
 提取码：
 vufi
 说明：
@@ -50,4 +50,4 @@ vufi
 
 动态网络：
 生成：每种网络设置组合下均生成1个标准网络，及其在T= 100/1000时间内的变化
-命名规则：{节点总数目}_defense_type_{1or2or3}_{网络类型{标准网络变化}}/t{时刻}
+命名规则：{节点总数目}_{网络类型{标准网络变化}}/t{时刻}

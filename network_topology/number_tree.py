@@ -59,8 +59,8 @@ def tree(core_switch_num,core_aggregation, aggregation_switch_num,aggregation_ed
                     G_H.add_edge(j,s)
         #将子网中的节点添加到总网络中
         G = nx.compose(G,G_H)
-        nx.draw(G, with_labels=True, alpha=0.8, node_size=500)
-        plt.savefig("/root/feifei/8_network_generator/data_cve/graph.png")  # 保存为 PNG 文件
+        # nx.draw(G, with_labels=True, alpha=0.8, node_size=500)
+        # plt.savefig("/root/feifei/8_network_generator/data_cve/graph.png")  # 保存为 PNG 文件
     G_number = set_node_attribute(G, defense_type)
     #画图
 
@@ -240,12 +240,12 @@ def load(fname):
 
 if __name__ == '__main__':
     #节点规模为10
-    core_switch_num =1
-    core_aggregation={0:2}
-    aggregation_switch_num = sum(core_aggregation.values())
-    aggregation_edge={0:2,1:2}
-    edge_switch_num = sum(aggregation_edge.values())
-    host_num = 8
+    # core_switch_num =1
+    # core_aggregation={0:2}
+    # aggregation_switch_num = sum(core_aggregation.values())
+    # aggregation_edge={0:2,1:2}
+    # edge_switch_num = sum(aggregation_edge.values())
+    # host_num = 8
 
     # #节点规模为100
     # core_switch_num =1
@@ -256,27 +256,27 @@ if __name__ == '__main__':
     # host_num = 90
 
     #节点规模为1000
-    # core_switch_num =1#核心交换机数量,树的根节点
-    # core_aggregation={0:7}#每个核心交换机连接的汇聚交换机数量
-    # aggregation_switch_num = sum(core_aggregation.values())#汇聚交换机数量
-    # aggregation_edge={0:7,1:3,2:7,3:7,4:6,5:6,6:7}#每个汇聚交换机连接的接入交换机数量
-    # ##接入交换机数量是aggregation_edge的所有键值的和
-    # edge_switch_num = sum(aggregation_edge.values())#接入交换机数量
-    # host_num = 950
+    core_switch_num =1#核心交换机数量,树的根节点
+    core_aggregation={0:7}#每个核心交换机连接的汇聚交换机数量
+    aggregation_switch_num = sum(core_aggregation.values())#汇聚交换机数量
+    aggregation_edge={0:7,1:3,2:7,3:7,4:6,5:6,6:7}#每个汇聚交换机连接的接入交换机数量
+    ##接入交换机数量是aggregation_edge的所有键值的和
+    edge_switch_num = sum(aggregation_edge.values())#接入交换机数量
+    host_num = 950
 
 
 
     pro = 0.65#存在多大的概率在同一个局域网内有同一个漏洞
     # np.random.seed(2077)
     #设置生成数值模拟网络类型，defense_type = 1,2,3
-    defense_type = 1
-    # defense_type = 2
+    # defense_type = 1
+    defense_type = 2
     # defense_type = 3
     #设置网络是静态的还是动态的，static = 0，1  0表示动态，1表示静态
 
     # 静态\动态网络的生成及保存
     static = 1
-    for c in range(10):
+    for c in range(5):
         if static == 1:#静态网络
             graph = tree(core_switch_num,core_aggregation, aggregation_switch_num,aggregation_edge,edge_switch_num,host_num,pro,defense_type)
     # nx.draw(graph, with_labels=True, alpha=0.8, node_size=500)
