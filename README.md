@@ -2,6 +2,11 @@
 
 This repository contains scripts to generate various types of network topologies, both hypothetical and authentic, with different defense and detection capabilities. Below are the instructions to set up and run the code.
 
+Yunfei Wang*, Shixuan Liu*, Wenhao Wang*, Changling Zhou, Chao Zhang, Jiandong Jin, Cheng Zhu.
+*equal contribution
+
+A link to our paper can be found on arXiv: [https://arxiv.org/abs/2502.11588](#)
+
 ## 1. Prerequisites
 
 ### (1) Dataset Preparation
