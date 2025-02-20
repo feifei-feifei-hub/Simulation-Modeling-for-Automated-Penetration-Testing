@@ -228,7 +228,7 @@ def generate_fat_tree(k,defense_type,pro):
             for d in range(random.randint(1,2)):
                 account.add((random.choice(user),random.choice(password),random.choice(["root","admin","user"])))
             G2.nodes[i]["account"] = list(account)
-        elif pro_type >= 0.7 and is_domain == False:
+        elif pro_type>0.7 and pro_type<0.8 and is_domain == False:
             firewall_cve_,firewall_port_cve_ = firewall_cve(G2.nodes[i]["system"])
             G2.nodes[i]["cve"] = list(firewall_cve_+firewall_port_cve_)
             G2.nodes[i]["software_version"] = []
@@ -493,7 +493,7 @@ def Dy_generate_fat_tree(k,defense_type,pro,T):
             for d in range(random.randint(1,2)):
                 account.add((random.choice(user),random.choice(password),random.choice(["root","admin","user"])))
             G2.nodes[i]["account"] = list(account)
-        elif pro_type >= 0.7 and is_domain == False:
+        elif pro_type>0.7 and pro_type<0.8 and is_domain == False:
             firewall_cve_,firewall_port_cve_ = firewall_cve(G2.nodes[i]["system"])
             G2.nodes[i]["cve"] = list(firewall_cve_+firewall_port_cve_)
             G2.nodes[i]["software_version"] = []

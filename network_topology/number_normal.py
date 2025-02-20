@@ -280,14 +280,14 @@ if __name__ == '__main__':
     # defense_type = 3
 
     # 静态\动态网络的生成及保存
-    static = 0
+    static = 1
 
     #节点规模为10
-    # layers = 3
-    # total = 20
-    # layers_percent = [0.6,0.3,0.1]
-    # Lan_num = [2,1,1]
-    # switchs_percent=[0.2,0.2,0.2]
+    layers = 3
+    total = 20
+    layers_percent = [0.6,0.3,0.1]
+    Lan_num = [2,1,1]
+    switchs_percent=[0.2,0.2,0.2]
     #节点规模为100
     # layers = 4
     # total = 100
@@ -295,11 +295,11 @@ if __name__ == '__main__':
     # Lan_num = [5,2,2,1]
     # switchs_percent=[0.2,0.2,0.2,0.2]
     #节点规模为1000
-    layers = 4
-    total = 1000
-    layers_percent = [0.5,0.3,0.1,0.1]
-    Lan_num = [5,2,2,1]
-    switchs_percent=[0.2,0.2,0.2,0.2]
+    # layers = 4
+    # total = 1000
+    # layers_percent = [0.5,0.3,0.1,0.1]
+    # Lan_num = [5,2,2,1]
+    # switchs_percent=[0.2,0.2,0.2,0.2]
     #生成网络
     for c in range(10):
         pro = 0.65#同一个局域网内部的节点哟多大的可能性拥有同一个cve
