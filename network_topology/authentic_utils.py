@@ -78,7 +78,7 @@ def common_database_cve(sys, file_path = '/root/feifei/8_network_generator/data_
 
 def commen_change(G_0,G, all_nodes, all_switches, all_servers):
     #代表真实类型的网络图中的常规变化
-    change_node = random.sample(all_nodes, max(int(0.02*len(all_nodes)),1))
+    change_node = random.sample(list(all_nodes), max(int(0.001*len(all_nodes)),1))
     #以一定的概率修复漏洞P= 0.5
     for i in change_node:
         if random.random() < 0.5:
@@ -100,15 +100,18 @@ def host_error_off(G, Host_error):
         if i in G.nodes():
             G.remove_node(i)
     return G
-def host_work_on(G_0,G, Host_work):
+def host_work_on(G_0,G, Host_work,t_errors):
     #在节点G中添加所有的Host_work节点，并根据G_0,增加相应的边
+    error_nodes = []
+    for i in t_errors:
+        error_nodes.append(i[1][0])
     for i in Host_work:
-        if i not in G.nodes():
+        if i not in G.nodes() and i not in error_nodes:
             node_0_attrs = G_0.nodes[i]
             G.add_node(i, **node_0_attrs)
-        for j in G_0.neighbors(i):
-            if j in G.nodes():
-                G.add_edge(i,j)
+            for j in G_0.neighbors(i):
+                if j in G.nodes():
+                    G.add_edge(i,j)
     return G
     
 def host_error_on(G_0,G, Host_error):

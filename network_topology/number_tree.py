@@ -125,7 +125,7 @@ def Dy_tree(core_switch_num,core_aggregation, aggregation_switch_num,aggregation
     #获取主机类型的节点
     all_nodes = set(G_number.nodes())
     all_servers = all_nodes - all_switches
-    Host_work = random.sample(all_servers,int(0.3*len(all_servers)))
+    Host_work = random.sample(list(all_servers),int(0.3*len(all_servers)))
     # Host_error = random.sample(all_servers,int(0.3*len(all_servers)))
     G_0 = copy.deepcopy(G_number)
     #从G_number.nodes()中选择一部分节点作为Host_work
@@ -275,13 +275,17 @@ if __name__ == '__main__':
     #设置网络是静态的还是动态的，static = 0，1  0表示动态，1表示静态
 
     # 静态\动态网络的生成及保存
-    static = 1
-    for c in range(5):
+    # static = 1
+    static = 0
+    for c in range(1):
         if static == 1:#静态网络
             graph = tree(core_switch_num,core_aggregation, aggregation_switch_num,aggregation_edge,edge_switch_num,host_num,pro,defense_type)
+            
     # nx.draw(graph, with_labels=True, alpha=0.8, node_size=500)
     # plt.savefig("123.png")
-            z = (f"./number_net/tree/static/{len(graph.nodes())}_defensetype_{defense_type}_tree{c}.gpickle")
+            # z = (f"./number_net/tree/static/{len(graph.nodes())}_defensetype_{defense_type}_tree{c}.gpickle")
+            z = (f"./number_net/test/static/{len(graph.nodes())}_defensetype_{defense_type}_tree{c}.gpickle")
+            os.makedirs(os.path.dirname(z), exist_ok=True)
             with open(z, 'wb') as f:
                 pickle.dump(graph, f, pickle.HIGHEST_PROTOCOL)
         else:#动态网络
@@ -289,7 +293,8 @@ if __name__ == '__main__':
             t_end = 1000
             Gy_graphs = Dy_tree(core_switch_num,core_aggregation, aggregation_switch_num,aggregation_edge,edge_switch_num,host_num,pro,defense_type, T = t_end)
             for i in range(len(Gy_graphs)):
-                z = (f"./number_net/tree/dynamic/{len(Gy_graphs[0].nodes())}_defensetype_{defense_type}_tree{c}/t{i}.gpickle")
+                # z = (f"./number_net/tree/dynamic/{len(Gy_graphs[0].nodes())}_defensetype_{defense_type}_tree{c}/t{i}.gpickle")
+                z = (f"./number_net/test/dynamic/{len(Gy_graphs[0].nodes())}_defensetype_{defense_type}_tree{c}/t{i}.gpickle")
                 os.makedirs(os.path.dirname(z), exist_ok=True)
                 with open(z, 'wb') as f:
                     pickle.dump(Gy_graphs[i], f, pickle.HIGHEST_PROTOCOL)

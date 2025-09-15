@@ -121,10 +121,11 @@ def partitioned_layered_garph_generatin(layers,total,layers_percent,Lan_num,swit
                     G_lans[i].nodes[j]["port_server_version"].append(port_server_version)
                 account = set()
                 for d in range(random.randint(1,2)):
-                    account.add((random.choice(user),random.choice(password),random.choice(["root","admin","user"])))
+                    account.add((random.choice(user),random.choice(password),random.choices(["root","admin","user"], weights=[0.3, 0.2, 0.5], k=1)[0]))
                 G_lans[i].nodes[j]["account"] = list(account)
             else:
                 G_lans[i].nodes[j]["cve"].append(k)
+
 
 
 
@@ -166,9 +167,10 @@ def partitioned_layered_garph_generatin(layers,total,layers_percent,Lan_num,swit
             #设置域交换机的账户
             G_switchs.nodes[i]["account"] = []
             domain_account = (random.choice(user),random.choice(password),"domain")
+            G_switchs.nodes[i]["account"].append(domain_account)
             account = random.randint(1,2)
             for j in range(account):
-                G_switchs.nodes[i]["account"].append((random.choice(user),random.choice(password),random.choice(["root","admin","user"])))
+                G_switchs.nodes[i]["account"].append((random.choice(user),random.choice(password),random.choices(["root","admin","user"], weights=[0.3, 0.2, 0.5], k=1)[0]))
         else:#非域控交换机，普通交换机
             G_switchs.nodes[i]["cve"] = common_switch_cve(G_switchs.nodes[i]["system"])
             G_switchs.nodes[i]["software_version"] = []
@@ -181,7 +183,7 @@ def partitioned_layered_garph_generatin(layers,total,layers_percent,Lan_num,swit
             account = random.randint(1,2)
             G_switchs.nodes[i]["account"] = []
             for j in range(account):
-                G_switchs.nodes[i]["account"].append((random.choice(user),random.choice(password),random.choice(["root","admin","user"])))
+                G_switchs.nodes[i]["account"].append((random.choice(user),random.choice(password),random.choices(["root","admin","user"], weights=[0.3, 0.2, 0.5], k=1)[0]))
     # Host_work = random.sample(list(all_servers),int(0.3*len(all_servers)))
 
 
@@ -203,11 +205,24 @@ def partitioned_layered_garph_generatin(layers,total,layers_percent,Lan_num,swit
     # 随机删除主机与交换机连接的一些边
     for i in G.nodes():
         if G.nodes[i]["type"] == "server":
-            neineighbors = list(G.neighbors(i))
-            for j in neineighbors:
-                if G.nodes[j]["type"] == "switch":
-                    if random.random() < 0.4:
-                        G.remove_edge(i,j)
+            # neineighbors = list(G.neighbors(i))
+            switch_neighbors = [j for j in G.neighbors(i) if G.nodes[j]["type"] == "switch"]
+            if not switch_neighbors:
+                continue
+            to_remove = []
+            for j in switch_neighbors:
+                if random.random() < 0.4:
+                    to_remove.append(j)
+            if len(to_remove) == len(switch_neighbors):
+                saved = random.choice(to_remove)
+                to_remove.remove(saved)
+            # 删除选中的边
+            for j in to_remove:
+                G.remove_edge(i, j)
+            # for j in neineighbors:
+            #     if G.nodes[j]["type"] == "switch":
+            #         if random.random() < 0.4 and len(list(G.neighbors(i))) > 1:
+            #             G.remove_edge(i,j)
 
 
     # nx.draw(G, with_labels=True, alpha=0.8, node_size=500)
@@ -260,7 +275,7 @@ def partitioned_layered_garph_generatin(layers,total,layers_percent,Lan_num,swit
                 account = set()
                 account.add(domain_account)
                 for d in range(random.randint(1,2)):
-                    account.add((random.choice(user),random.choice(password),random.choice(["root","admin","user"])))
+                    account.add((random.choice(user),random.choice(password),random.choices(["root","admin","user"], weights=[0.3, 0.2, 0.5], k=1)[0]))
                 G.nodes[i]["account"] = list(account)
             elif pro_type < 0.7 and is_domain == False:
                 #是普通主机
@@ -284,7 +299,7 @@ def partitioned_layered_garph_generatin(layers,total,layers_percent,Lan_num,swit
                     G.nodes[i]["port_server_version"].append(port_server_version)
                 account = set()
                 for d in range(random.randint(1,2)):
-                    account.add((random.choice(user),random.choice(password),random.choice(["root","admin","user"])))
+                    account.add((random.choice(user),random.choice(password),random.choices(["root","admin","user"], weights=[0.3, 0.2, 0.5], k=1)[0]))
                 G.nodes[i]["account"] = list(account)
             elif pro_type>0.7 and pro_type<0.8 and is_domain == False:
                 #是防火墙
@@ -308,7 +323,7 @@ def partitioned_layered_garph_generatin(layers,total,layers_percent,Lan_num,swit
                     G.nodes[i]["port_server_version"].append(port_server_version)
                 account = set()
                 for d in range(random.randint(1,2)):
-                    account.add((random.choice(user),random.choice(password),random.choice(["root","admin","user"])))
+                    account.add((random.choice(user),random.choice(password),random.choices(["root","admin","user"], weights=[0.3, 0.2, 0.5], k=1)[0]))
                 G.nodes[i]["account"] = list(account)
             else:
                 #是数据库
@@ -332,7 +347,7 @@ def partitioned_layered_garph_generatin(layers,total,layers_percent,Lan_num,swit
                     G.nodes[i]["port_server_version"].append(port_server_version)
                 account = set()
                 for d in range(random.randint(1,2)):
-                    account.add((random.choice(user),random.choice(password),random.choice(["root","admin","user"])))
+                    account.add((random.choice(user),random.choice(password),random.choices(["root","admin","user"], weights=[0.3, 0.2, 0.5], k=1)[0]))
                 G.nodes[i]["account"] = list(account)
     return G#生成了网络图
 
@@ -437,10 +452,11 @@ def Dy_partitioned_layered_garph_generatin(layers,total,layers_percent,Lan_num,s
                     G_lans[i].nodes[j]["port_server_version"].append(port_server_version)
                 account = set()
                 for d in range(random.randint(1,2)):
-                    account.add((random.choice(user),random.choice(password),random.choice(["root","admin","user"])))
+                    account.add((random.choice(user),random.choice(password),random.choices(["root","admin","user"], weights=[0.3, 0.2, 0.5], k=1)[0]))
                 G_lans[i].nodes[j]["account"] = list(account)
             else:
                 G_lans[i].nodes[j]["cve"].append(k)
+              
 
     #生成交换机之间的连接，同层交换机不连接，交换机只与紧挨着的上一层交换机连接
     G_switchs = nx.Graph()
@@ -479,9 +495,10 @@ def Dy_partitioned_layered_garph_generatin(layers,total,layers_percent,Lan_num,s
             #设置域交换机的账户
             G_switchs.nodes[i]["account"] = []
             domain_account = (random.choice(user),random.choice(password),"domain")
+            G_switchs.nodes[i]["account"].append(domain_account)
             account = random.randint(1,2)
             for j in range(account):
-                G_switchs.nodes[i]["account"].append((random.choice(user),random.choice(password),random.choice(["root","admin","user"])))
+                G_switchs.nodes[i]["account"].append((random.choice(user),random.choice(password),random.choices(["root","admin","user"], weights=[0.3, 0.2, 0.5], k=1)[0]))
         else:#非域控交换机，普通交换机
             G_switchs.nodes[i]["cve"] = common_switch_cve(G_switchs.nodes[i]["system"])
             G_switchs.nodes[i]["software_version"] = []
@@ -494,7 +511,7 @@ def Dy_partitioned_layered_garph_generatin(layers,total,layers_percent,Lan_num,s
             account = random.randint(1,2)
             G_switchs.nodes[i]["account"] = []
             for j in range(account):
-                G_switchs.nodes[i]["account"].append((random.choice(user),random.choice(password),random.choice(["root","admin","user"])))
+                G_switchs.nodes[i]["account"].append((random.choice(user),random.choice(password),random.choices(["root","admin","user"], weights=[0.3, 0.2, 0.5], k=1)[0]))
     # Host_work = random.sample(list(all_servers),int(0.3*len(all_servers)))
 
     #将上面生成的交换机与局域网连接起来
@@ -515,11 +532,24 @@ def Dy_partitioned_layered_garph_generatin(layers,total,layers_percent,Lan_num,s
     # 随机删除主机与交换机连接的一些边
     for i in G.nodes():
         if G.nodes[i]["type"] == "server":
-            neineighbors = list(G.neighbors(i))
-            for j in neineighbors:
-                if G.nodes[j]["type"] == "switch":
-                    if random.random() < 0.4:
-                        G.remove_edge(i,j)
+            # neineighbors = list(G.neighbors(i))
+            switch_neighbors = [j for j in G.neighbors(i) if G.nodes[j]["type"] == "switch"]
+            if not switch_neighbors:
+                continue
+            to_remove = []
+            for j in switch_neighbors:
+                if random.random() < 0.4:
+                    to_remove.append(j)
+            if len(to_remove) == len(switch_neighbors):
+                saved = random.choice(to_remove)
+                to_remove.remove(saved)
+            # 删除选中的边
+            for j in to_remove:
+                G.remove_edge(i, j)
+            # for j in neineighbors:
+            #     if G.nodes[j]["type"] == "switch":
+            #         if random.random() < 0.4 and len(list(G.neighbors(i))) > 1:
+            #             G.remove_edge(i,j)
 
 
     # nx.draw(G, with_labels=True, alpha=0.8, node_size=500)
@@ -571,7 +601,7 @@ def Dy_partitioned_layered_garph_generatin(layers,total,layers_percent,Lan_num,s
                 account = set()
                 account.add(domain_account)
                 for d in range(random.randint(1,2)):
-                    account.add((random.choice(user),random.choice(password),random.choice(["root","admin","user"])))
+                    account.add((random.choice(user),random.choice(password),random.choices(["root","admin","user"], weights=[0.3, 0.2, 0.5], k=1)[0]))
                 G.nodes[i]["account"] = list(account)
             elif pro_type < 0.7 and is_domain == False:
                 #是普通主机
@@ -595,7 +625,7 @@ def Dy_partitioned_layered_garph_generatin(layers,total,layers_percent,Lan_num,s
                     G.nodes[i]["port_server_version"].append(port_server_version)
                 account = set()
                 for d in range(random.randint(1,2)):
-                    account.add((random.choice(user),random.choice(password),random.choice(["root","admin","user"])))
+                    account.add((random.choice(user),random.choice(password),random.choices(["root","admin","user"], weights=[0.3, 0.2, 0.5], k=1)[0]))
                 G.nodes[i]["account"] = list(account)
             elif pro_type>0.7 and pro_type<0.8 and is_domain == False:
                 #是防火墙
@@ -619,7 +649,7 @@ def Dy_partitioned_layered_garph_generatin(layers,total,layers_percent,Lan_num,s
                     G.nodes[i]["port_server_version"].append(port_server_version)
                 account = set()
                 for d in range(random.randint(1,2)):
-                    account.add((random.choice(user),random.choice(password),random.choice(["root","admin","user"])))
+                    account.add((random.choice(user),random.choice(password),random.choices(["root","admin","user"], weights=[0.3, 0.2, 0.5], k=1)[0]))
                 G.nodes[i]["account"] = list(account)
             else:
                 #是数据库
@@ -643,15 +673,16 @@ def Dy_partitioned_layered_garph_generatin(layers,total,layers_percent,Lan_num,s
                     G.nodes[i]["port_server_version"].append(port_server_version)
                 account = set()
                 for d in range(random.randint(1,2)):
-                    account.add((random.choice(user),random.choice(password),random.choice(["root","admin","user"])))
+                    account.add((random.choice(user),random.choice(password),random.choices(["root","admin","user"], weights=[0.3, 0.2, 0.5], k=1)[0]))
                 G.nodes[i]["account"] = list(account)
-    
+    # 以上为生成静态图的代码
     # G_number = set_node_attribute(G, defense_type)
     G_number = copy.deepcopy(G)
     Dy_G = []
     t_errors = []
     Dy_G.append(G_number)#保存0时刻的网络
     # G_0 = G_number.copy()
+    is_work = True
     G_0 = copy.deepcopy(G_number)
     for t in range(1, T):
         # G_ = Dy_G[t-1].copy()
@@ -664,13 +695,21 @@ def Dy_partitioned_layered_garph_generatin(layers,total,layers_percent,Lan_num,s
 
         #主机的工作状态变化
         if t % 12 == 0 and (t // 12) % 2 == 1:#下班时间，每隔12个时间点，更换一次
+            is_work = False
             G_ = host_work_off(G_, Host_work)
         elif t % 12 == 0 and (t // 12) % 2 == 0:#上班时间，每隔12个时间点，更换一次
-            G_ = host_work_on(G_0, G_, Host_work)
+            is_work = True
+            G_ = host_work_on(G_0, G_, Host_work,t_errors)
 
         #主机的故障状态变化
         real_error = []
-        for h in Host_work:
+        if is_work:
+            #当前是工作时间，故障候选节点是所有主机
+            host_candidata = {n for n in G_.nodes() if G_.nodes[n]['type'] == 'server'}
+        else:
+            #当前是休息时间，故障候选节点是主机节点-关机节点
+            host_candidata = {n for n in G_.nodes() if G_.nodes[n]['type'] == 'server'} - set(Host_work)
+        for h in host_candidata:
             #如果生成的随机数小于0.001，表示这个主机出现故障
             if random.random() < 0.001:
                 G_ = host_error_off(G_, [h])
@@ -680,6 +719,7 @@ def Dy_partitioned_layered_garph_generatin(layers,total,layers_percent,Lan_num,s
         for m in t_errors:
             if m[0] + 72 == t:
                 G_ = host_error_on(G_0, G_, m[1])
+                t_errors.remove(m)
         Dy_G.append(G_)
     return Dy_G#生成了网络图
     
@@ -709,14 +749,15 @@ if __name__ == '__main__':
     # defense_type = 3
 
     # 静态\动态网络的生成及保存
-    static = 0
+    # static = 0 #动态网络
+    static = 1#静态网络
 
     #节点规模为10
-    layers = 3
-    total = 20
-    layers_percent = [0.6,0.3,0.1]
-    Lan_num = [2,1,1]
-    switchs_percent=[0.2,0.2,0.2]
+    # layers = 3
+    # total = 20
+    # layers_percent = [0.6,0.3,0.1]
+    # Lan_num = [2,1,1]
+    # switchs_percent=[0.2,0.2,0.2]
     #节点规模为100
     # layers = 4
     # total = 100
@@ -724,18 +765,20 @@ if __name__ == '__main__':
     # Lan_num = [5,2,2,1]
     # switchs_percent=[0.2,0.2,0.2,0.2]
     #节点规模为1000
-    # layers = 4
-    # total = 1000
-    # layers_percent = [0.5,0.3,0.1,0.1]
-    # Lan_num = [5,2,2,1]
-    # switchs_percent=[0.2,0.2,0.2,0.2]
+    layers = 4
+    total = 1000
+    layers_percent = [0.5,0.3,0.1,0.1]
+    Lan_num = [5,2,2,1]
+    switchs_percent=[0.2,0.2,0.2,0.2]
     #生成网络
     for c in range(1):
         pro = 0.65#同一个局域网内部的节点哟多大的可能性拥有同一个cve
         # np.random.seed(2077)
         if static == 1:#静态网络
             graph = partitioned_layered_garph_generatin(layers,total,layers_percent,Lan_num,switchs_percent,pro)
-            z = (f"./authentic_net/partitioned_layered/static/{len(graph.nodes())}_net{c}.gpickle")
+            # z = (f"./authentic_net/partitioned_layered/static/{len(graph.nodes())}_net{c}.gpickle")
+            z = (f"./authentic_net/test/static/{len(graph.nodes())}_net{c}.gpickle")
+            os.makedirs(os.path.dirname(z), exist_ok=True)
             with open(z, 'wb') as f:
                 pickle.dump(graph, f, pickle.HIGHEST_PROTOCOL)
         #print(graph.nodes(data = True))
@@ -744,7 +787,8 @@ if __name__ == '__main__':
             t_end = 100
             Gy_graphs = Dy_partitioned_layered_garph_generatin(layers,total,layers_percent,Lan_num,switchs_percent,pro, T = t_end)
             for i in range(len(Gy_graphs)):
-                z = (f"./authentic_net/partitioned_layered/dynamic/{len(Gy_graphs[0].nodes())}_net{c}/t{i}.gpickle")
+                # z = (f"./authentic_net/partitioned_layered/dynamic/{len(Gy_graphs[0].nodes())}_net{c}/t{i}.gpickle")
+                z = (f"./authentic_net/test/dynamic/{len(Gy_graphs[0].nodes())}_net{c}/t{i}.gpickle")
                 os.makedirs(os.path.dirname(z), exist_ok=True)
                 with open(z, 'wb') as f:
                     pickle.dump(Gy_graphs[i], f, pickle.HIGHEST_PROTOCOL)

@@ -91,11 +91,24 @@ def partitioned_layered_garph_generatin(layers,total,layers_percent,Lan_num,swit
     # 随机删除主机与交换机连接的一些边
     for i in G.nodes():
         if G.nodes[i]["type"] == "server":
-            neineighbors = list(G.neighbors(i))
-            for j in neineighbors:
-                if G.nodes[j]["type"] == "switch":
-                    if random.random() < 0.4:
-                        G.remove_edge(i,j)
+            # neineighbors = list(G.neighbors(i))
+            switch_neighbors = [j for j in G.neighbors(i) if G.nodes[j]["type"] == "switch"]
+            if not switch_neighbors:
+                continue
+            to_remove = []
+            for j in switch_neighbors:
+                if random.random() < 0.4:
+                    to_remove.append(j)
+            if len(to_remove) == len(switch_neighbors):
+                saved = random.choice(to_remove)
+                to_remove.remove(saved)
+            # 删除选中的边
+            for j in to_remove:
+                G.remove_edge(i, j)
+            # for j in neineighbors:
+            #     if G.nodes[j]["type"] == "switch":
+            #         if random.random() < 0.4 and len(list(G.neighbors(i))) > 1:
+            #             G.remove_edge(i,j)
 
 
     # nx.draw(G, with_labels=True, alpha=0.8, node_size=500)
@@ -193,11 +206,25 @@ def Dy_partitioned_layered_garph_generatin(layers,total,layers_percent,Lan_num,s
     # 随机删除主机与交换机连接的一些边
     for i in G.nodes():
         if G.nodes[i]["type"] == "server":
-            neineighbors = list(G.neighbors(i))
-            for j in neineighbors:
-                if G.nodes[j]["type"] == "switch":
-                    if random.random() < 0.4:
-                        G.remove_edge(i,j)
+            # if G.nodes[i]["type"] == "server":
+            # neineighbors = list(G.neighbors(i))
+            switch_neighbors = [j for j in G.neighbors(i) if G.nodes[j]["type"] == "switch"]
+            if not switch_neighbors:
+                continue
+            to_remove = []
+            for j in switch_neighbors:
+                if random.random() < 0.4:
+                    to_remove.append(j)
+            if len(to_remove) == len(switch_neighbors):
+                saved = random.choice(to_remove)
+                to_remove.remove(saved)
+            # 删除选中的边
+            for j in to_remove:
+                G.remove_edge(i, j)
+            # for j in neineighbors:
+            #     if G.nodes[j]["type"] == "switch":
+            #         if random.random() < 0.4 and len(list(G.neighbors(i))) > 1:
+            #             G.remove_edge(i,j)
 
 
     # nx.draw(G, with_labels=True, alpha=0.8, node_size=500)
@@ -281,6 +308,7 @@ if __name__ == '__main__':
 
     # 静态\动态网络的生成及保存
     static = 0
+    # static = 1
 
     #节点规模为10
     layers = 3
@@ -307,6 +335,8 @@ if __name__ == '__main__':
         if static == 1:#静态网络
             graph = partitioned_layered_garph_generatin(layers,total,layers_percent,Lan_num,switchs_percent,pro,defense_type)
             z = (f"./number_net/partitioned_layered/static/{len(graph.nodes())}_defensetype_{defense_type}_net{c}.gpickle")
+            # z = (f"./number_net/test/static/{len(graph.nodes())}_defensetype_{defense_type}_net{c}.gpickle")
+            os.makedirs(os.path.dirname(z), exist_ok=True)
             with open(z, 'wb') as f:
                 pickle.dump(graph, f, pickle.HIGHEST_PROTOCOL)
         #print(graph.nodes(data = True))
@@ -316,6 +346,7 @@ if __name__ == '__main__':
             Gy_graphs = Dy_partitioned_layered_garph_generatin(layers,total,layers_percent,Lan_num,switchs_percent,pro,defense_type, T = t_end)
             for i in range(len(Gy_graphs)):
                 z = (f"./number_net/partitioned_layered/dynamic/{len(Gy_graphs[0].nodes())}_defensetype_{defense_type}_net{c}/t{i}.gpickle")
+                # z = (f"./number_net/test/dynamic/{len(Gy_graphs[0].nodes())}_defensetype_{defense_type}_net{c}/t{i}.gpickle")
                 os.makedirs(os.path.dirname(z), exist_ok=True)
                 with open(z, 'wb') as f:
                     pickle.dump(Gy_graphs[i], f, pickle.HIGHEST_PROTOCOL)

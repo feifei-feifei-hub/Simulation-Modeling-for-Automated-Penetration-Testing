@@ -103,9 +103,10 @@ def tree(core_switch_num,core_aggregation, aggregation_switch_num,aggregation_ed
             #设置域交换机的账户
             G.nodes[i]["account"] = []
             domain_account = (random.choice(user),random.choice(password),"domain")
+            G.nodes[i]["account"].append(domain_account)
             account = random.randint(1,2)
             for j in range(account):
-                G.nodes[i]["account"].append((random.choice(user),random.choice(password),random.choice(["root","admin","user"])))
+                G.nodes[i]["account"].append((random.choice(user),random.choice(password),random.choices(["root","admin","user"], weights=[0.3, 0.2, 0.5], k=1)[0]))
         else:#非域控交换机，普通交换机
             G.nodes[i]["cve"] = common_switch_cve(G.nodes[i]["system"])
             G.nodes[i]["software_version"] = []
@@ -118,7 +119,7 @@ def tree(core_switch_num,core_aggregation, aggregation_switch_num,aggregation_ed
             account = random.randint(1,2)
             G.nodes[i]["account"] = []
             for j in range(account):
-                G.nodes[i]["account"].append((random.choice(user),random.choice(password),random.choice(["root","admin","user"])))
+                G.nodes[i]["account"].append((random.choice(user),random.choice(password),random.choices(["root","admin","user"], weights=[0.3, 0.2, 0.5], k=1)[0]))
     for i in G_edge.nodes():#对于每一个接入交换机
         #创建一个子网内部全连接图
         all_node_now = len(G.nodes())
@@ -172,7 +173,7 @@ def tree(core_switch_num,core_aggregation, aggregation_switch_num,aggregation_ed
                 account = set()
                 account.add(domain_account)
                 for j in range(random.randint(1,2)):
-                    account.add((random.choice(user),random.choice(password),random.choice(["root","admin","user"])))
+                    account.add((random.choice(user),random.choice(password),random.choices(["root","admin","user"], weights=[0.3, 0.2, 0.5], k=1)[0]))
                 G_H.nodes[all_node_now]["account"] = list(account)
                 break
             elif pro_type < 0.7 and is_domain == False:
@@ -196,7 +197,7 @@ def tree(core_switch_num,core_aggregation, aggregation_switch_num,aggregation_ed
                     G_H.nodes[all_node_now]["port_server_version"].append(port_server_version)
                 account = set()
                 for j in range(random.randint(1,2)):
-                    account.add((random.choice(user),random.choice(password),random.choice(["root","admin","user"])))
+                    account.add((random.choice(user),random.choice(password),random.choices(["root","admin","user"], weights=[0.3, 0.2, 0.5], k=1)[0]))
                 G_H.nodes[all_node_now]["account"] = list(account)
             elif pro_type > 0.7 and pro_type < 0.8 and is_domain == False:
                 #防火墙
@@ -218,7 +219,7 @@ def tree(core_switch_num,core_aggregation, aggregation_switch_num,aggregation_ed
                 account = set()
                 
                 for j in range(random.randint(1,2)):
-                    account.add((random.choice(user),random.choice(password),random.choice(["root","admin","user"])))
+                    account.add((random.choice(user),random.choice(password),random.choices(["root","admin","user"], weights=[0.3, 0.2, 0.5], k=1)[0]))
                 G_H.nodes[all_node_now]["account"] = list(account)
             else:
                 #数据库或服务器
@@ -240,7 +241,7 @@ def tree(core_switch_num,core_aggregation, aggregation_switch_num,aggregation_ed
                 account = set()
                 
                 for j in range(random.randint(1,2)):
-                    account.add((random.choice(user),random.choice(password),random.choice(["root","admin","user"])))
+                    account.add((random.choice(user),random.choice(password),random.choices(["root","admin","user"], weights=[0.3, 0.2, 0.5], k=1)[0]))
                 G_H.nodes[all_node_now]["account"] = list(account)
             all_node_now += 1
         count += 1
@@ -295,6 +296,7 @@ def Dy_tree(core_switch_num,core_aggregation, aggregation_switch_num,aggregation
 
     #故障时刻表
     t_errors = []
+    is_work = True#表示当前是上班时间
     lan_ID = 0#用于计算当前是在生成哪一个局域网的ID
     start = 0
     end = 0
@@ -344,9 +346,10 @@ def Dy_tree(core_switch_num,core_aggregation, aggregation_switch_num,aggregation
             #设置域交换机的账户
             G.nodes[i]["account"] = []
             domain_account = (random.choice(user),random.choice(password),"domain")
+            G.nodes[i]["account"].append(domain_account)
             account = random.randint(1,2)
             for j in range(account):
-                G.nodes[i]["account"].append((random.choice(user),random.choice(password),random.choice(["root","admin","user"])))
+                G.nodes[i]["account"].append((random.choice(user),random.choice(password),random.choices(["root","admin","user"], weights=[0.3, 0.2, 0.5], k=1)[0]))
         else:#非域控交换机，普通交换机
             G.nodes[i]["cve"] = common_switch_cve(G.nodes[i]["system"])
             G.nodes[i]["software_version"] = []
@@ -359,7 +362,7 @@ def Dy_tree(core_switch_num,core_aggregation, aggregation_switch_num,aggregation
             account = random.randint(1,2)
             G.nodes[i]["account"] = []
             for j in range(account):
-                G.nodes[i]["account"].append((random.choice(user),random.choice(password),random.choice(["root","admin","user"])))
+                G.nodes[i]["account"].append((random.choice(user),random.choice(password),random.choices(["root","admin","user"], weights=[0.3, 0.2, 0.5], k=1)[0]))
     for i in G_edge.nodes():#对于每一个接入交换机
         #创建一个子网内部全连接图
         all_node_now = len(G.nodes())
@@ -411,7 +414,7 @@ def Dy_tree(core_switch_num,core_aggregation, aggregation_switch_num,aggregation
                 account = set()
                 account.add(domain_account)
                 for j in range(random.randint(1,2)):
-                    account.add((random.choice(user),random.choice(password),random.choice(["root","admin","user"])))
+                    account.add((random.choice(user),random.choice(password),random.choices(["root","admin","user"], weights=[0.3, 0.2, 0.5], k=1)[0]))
                 G_H.nodes[all_node_now]["account"] = list(account)
             elif pro_type < 0.7 and is_domain == False:
                 #普通主机
@@ -434,7 +437,7 @@ def Dy_tree(core_switch_num,core_aggregation, aggregation_switch_num,aggregation
                     G_H.nodes[all_node_now]["port_server_version"].append(port_server_version)
                 account = set()
                 for j in range(random.randint(1,2)):
-                    account.add((random.choice(user),random.choice(password),random.choice(["root","admin","user"])))
+                    account.add((random.choice(user),random.choice(password),random.choices(["root","admin","user"], weights=[0.3, 0.2, 0.5], k=1)[0]))
                 G_H.nodes[all_node_now]["account"] = list(account)
             elif pro_type > 0.7 and pro_type < 0.8 and is_domain == False:
                 #防火墙
@@ -455,7 +458,7 @@ def Dy_tree(core_switch_num,core_aggregation, aggregation_switch_num,aggregation
                     G_H.nodes[all_node_now]["port_server_version"].append(port_server_version)
                 account = set()
                 for j in range(random.randint(1,2)):
-                    account.add((random.choice(user),random.choice(password),random.choice(["root","admin","user"])))
+                    account.add((random.choice(user),random.choice(password),random.choices(["root","admin","user"], weights=[0.3, 0.2, 0.5], k=1)[0]))
                 G_H.nodes[all_node_now]["account"] = list(account)
             else:
                 #数据库或服务器
@@ -477,7 +480,7 @@ def Dy_tree(core_switch_num,core_aggregation, aggregation_switch_num,aggregation
                 account = set()
                 
                 for j in range(random.randint(1,2)):
-                    account.add((random.choice(user),random.choice(password),random.choice(["root","admin","user"])))
+                    account.add((random.choice(user),random.choice(password),random.choices(["root","admin","user"], weights=[0.3, 0.2, 0.5], k=1)[0]))
                 G_H.nodes[all_node_now]["account"] = list(account)
 
             all_node_now += 1
@@ -496,7 +499,7 @@ def Dy_tree(core_switch_num,core_aggregation, aggregation_switch_num,aggregation
     #获取主机类型的节点
     all_nodes = set(G_number.nodes())
     all_servers = all_nodes - all_switches
-    Host_work = random.sample(all_servers,int(0.3*len(all_servers)))
+    Host_work = random.sample(list(all_servers),int(0.3*len(all_servers)))
     # Host_error = random.sample(all_servers,int(0.3*len(all_servers)))
     G_0 = copy.deepcopy(G_number)
     #从G_number.nodes()中选择一部分节点作为Host_work
@@ -511,12 +514,20 @@ def Dy_tree(core_switch_num,core_aggregation, aggregation_switch_num,aggregation
         G_0,G_ = commen_change(G_0,G_, all_nodes_, all_switches, all_severs_)
         #主机的工作状态变化
         if t % 12 == 0 and (t // 12) % 2 == 1:#下班时间，每隔12个时间点，更换一次
+            is_work = False#表示当前是上班时间
             G_ = host_work_off(G_, Host_work)
         elif t % 12 == 0 and (t // 12) % 2 == 0:#上班时间，每隔12个时间点，更换一次
-            G_ = host_work_on(G_0, G_, Host_work)
+            G_ = host_work_on(G_0, G_, Host_work,t_errors)
+            is_work = True
         real_error = []
+        if is_work:
+            #当前是工作时间，故障候选节点是所有主机
+            host_candidata = {n for n in G_.nodes() if G_.nodes[n]['type'] == 'server'}
+        else:
+            #当前是休息时间，故障候选节点是主机节点-关机节点
+            host_candidata = {n for n in G_.nodes() if G_.nodes[n]['type'] == 'server'} - set(Host_work)
         #主机的故障状态变化
-        for h in Host_work:
+        for h in host_candidata:
             #如果生成的随机数小于0.001，表示这个主机出现故障
             if random.random() < 0.001:
                 G_ = host_error_off(G_, [h])
@@ -526,6 +537,7 @@ def Dy_tree(core_switch_num,core_aggregation, aggregation_switch_num,aggregation
         for m in t_errors:
             if m[0] + 72 == t:
                 G_ = host_error_on(G_0, G_, m[1])
+                t_errors.remove(m)
         Dy_G.append(G_)
     return Dy_G
 
@@ -648,13 +660,16 @@ if __name__ == '__main__':
     #设置网络是静态的还是动态的，static = 0，1  0表示动态，1表示静态
 
     # 静态\动态网络的生成及保存
-    static = 0
+    # static = 0
+    static = 1
     for c in range(1):
         if static == 1:#静态网络
             graph = tree(core_switch_num,core_aggregation, aggregation_switch_num,aggregation_edge,edge_switch_num,host_num,pro)
     # nx.draw(graph, with_labels=True, alpha=0.8, node_size=500)
     # plt.savefig("123.png")
             z = (f"./authentic_net/tree/static/{len(graph.nodes())}_tree{c}.gpickle")
+            # z = (f"./authentic_net/test/static/{len(graph.nodes())}_tree{c}.gpickle")
+            os.makedirs(os.path.dirname(z), exist_ok=True)
             with open(z, 'wb') as f:
                 pickle.dump(graph, f, pickle.HIGHEST_PROTOCOL)
         else:#动态网络
@@ -662,7 +677,8 @@ if __name__ == '__main__':
             t_end = 1000
             Gy_graphs = Dy_tree(core_switch_num,core_aggregation, aggregation_switch_num,aggregation_edge,edge_switch_num,host_num,pro, T = t_end)
             for i in range(len(Gy_graphs)):
-                z = (f"./authentic_net/tree/dynamic/{len(Gy_graphs[0].nodes())}_defensetype_tree{c}/t{i}.gpickle")
+                z = (f"./authentic_net/tree/dynamic/{len(Gy_graphs[0].nodes())}_tree{c}/t{i}.gpickle")
+                # z = (f"./authentic_net/test/dynamic/{len(Gy_graphs[0].nodes())}_tree{c}/t{i}.gpickle")
                 os.makedirs(os.path.dirname(z), exist_ok=True)
                 with open(z, 'wb') as f:
                     pickle.dump(Gy_graphs[i], f, pickle.HIGHEST_PROTOCOL)

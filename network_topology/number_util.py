@@ -3,7 +3,7 @@ import random
 from networkx.readwrite import json_graph
 def commen_change(G_0,G, all_nodes, all_switches, all_servers):
     #代表数值类型的网络图中的常规变化
-    change_node = random.sample(all_nodes, max(int(0.02*len(all_nodes)),1))
+    change_node = random.sample(list(all_nodes), max(int(0.02*len(all_nodes)),1))
     for i in change_node:
         #增加防御属性
         if G.nodes[i]["detection"] < 10:

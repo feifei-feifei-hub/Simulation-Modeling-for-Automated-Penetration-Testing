@@ -128,9 +128,10 @@ def generate_fat_tree(k,pro):
             #设置域交换机的账户
             G2.nodes[i]["account"] = []
             domain_account = (random.choice(user),random.choice(password),"domain")
+            G2.nodes[i]["account"].append(domain_account)
             account = random.randint(1,2)
             for j in range(account):
-                G2.nodes[i]["account"].append((random.choice(user),random.choice(password),random.choice(["root","admin","user"])))
+                G2.nodes[i]["account"].append((random.choice(user),random.choice(password),random.choices(["root","admin","user"], weights=[0.3, 0.2, 0.5], k=1)[0]))
         else:#非域控交换机，普通交换机
             G2.nodes[i]["cve"] = common_switch_cve(G2.nodes[i]["system"])
             G2.nodes[i]["software_version"] = []
@@ -143,7 +144,7 @@ def generate_fat_tree(k,pro):
             account = random.randint(1,2)
             G2.nodes[i]["account"] = []
             for j in range(account):
-                G2.nodes[i]["account"].append((random.choice(user),random.choice(password),random.choice(["root","admin","user"])))
+                G2.nodes[i]["account"].append((random.choice(user),random.choice(password),random.choices(["root","admin","user"], weights=[0.3, 0.2, 0.5], k=1)[0]))
     Host_work = random.sample(list(all_servers),int(0.3*len(all_servers)))
     for u, v in G.edges():
         G2.add_edge(node_mapping[u], node_mapping[v])
@@ -203,7 +204,7 @@ def generate_fat_tree(k,pro):
             account = set()
             account.add(domain_account)
             for d in range(random.randint(1,2)):
-                account.add((random.choice(user),random.choice(password),random.choice(["root","admin","user"])))
+                account.add((random.choice(user),random.choice(password),random.choices(["root","admin","user"], weights=[0.3, 0.2, 0.5], k=1)[0]))
             G2.nodes[i]["account"] = list(account)
         elif pro_type < 0.7 and is_domain == False:
             #是普通主机
@@ -226,7 +227,7 @@ def generate_fat_tree(k,pro):
                 G2.nodes[i]["port_server_version"].append(port_server_version)
             account = set()
             for d in range(random.randint(1,2)):
-                account.add((random.choice(user),random.choice(password),random.choice(["root","admin","user"])))
+                account.add((random.choice(user),random.choice(password),random.choices(["root","admin","user"], weights=[0.3, 0.2, 0.5], k=1)[0]))
             G2.nodes[i]["account"] = list(account)
         elif pro_type>0.7 and pro_type<0.8 and is_domain == False:
             firewall_cve_,firewall_port_cve_ = firewall_cve(G2.nodes[i]["system"])
@@ -246,7 +247,7 @@ def generate_fat_tree(k,pro):
                 G2.nodes[i]["port_server_version"].append(port_server_version)
             account = set()
             for d in range(random.randint(1,2)):
-                account.add((random.choice(user),random.choice(password),random.choice(["root","admin","user"])))
+                account.add((random.choice(user),random.choice(password),random.choices(["root","admin","user"], weights=[0.3, 0.2, 0.5], k=1)[0]))
             G2.nodes[i]["account"] = list(account)
         else:
             #是数据库或服务器
@@ -267,7 +268,7 @@ def generate_fat_tree(k,pro):
                 G2.nodes[i]["port_server_version"].append(port_server_version)
             account = set()
             for d in range(random.randint(1,2)):
-                account.add((random.choice(user),random.choice(password),random.choice(["root","admin","user"])))
+                account.add((random.choice(user),random.choice(password),random.choices(["root","admin","user"], weights=[0.3, 0.2, 0.5], k=1)[0]))
             G2.nodes[i]["account"] = list(account)
     return G2#生成了网络图
 
@@ -393,9 +394,10 @@ def Dy_generate_fat_tree(k,pro,T):
             #设置域交换机的账户
             G2.nodes[i]["account"] = []
             domain_account = (random.choice(user),random.choice(password),"domain")
+            G2.nodes[i]["account"].append(domain_account)
             account = random.randint(1,2)
             for j in range(account):
-                G2.nodes[i]["account"].append((random.choice(user),random.choice(password),random.choice(["root","admin","user"])))
+                G2.nodes[i]["account"].append((random.choice(user),random.choice(password),random.choices(["root","admin","user"], weights=[0.3, 0.2, 0.5], k=1)[0]))
         else:#非域控交换机，普通交换机
             G2.nodes[i]["cve"] = common_switch_cve(G2.nodes[i]["system"])
             G2.nodes[i]["software_version"] = []
@@ -408,7 +410,7 @@ def Dy_generate_fat_tree(k,pro,T):
             account = random.randint(1,2)
             G2.nodes[i]["account"] = []
             for j in range(account):
-                G2.nodes[i]["account"].append((random.choice(user),random.choice(password),random.choice(["root","admin","user"])))
+                G2.nodes[i]["account"].append((random.choice(user),random.choice(password),random.choices(["root","admin","user"], weights=[0.3, 0.2, 0.5], k=1)[0]))
     Host_work = random.sample(list(all_servers),int(0.3*len(all_servers)))
     for u, v in G.edges():
         G2.add_edge(node_mapping[u], node_mapping[v])
@@ -468,7 +470,7 @@ def Dy_generate_fat_tree(k,pro,T):
             account = set()
             account.add(domain_account)
             for d in range(random.randint(1,2)):
-                account.add((random.choice(user),random.choice(password),random.choice(["root","admin","user"])))
+                account.add((random.choice(user),random.choice(password),random.choices(["root","admin","user"], weights=[0.3, 0.2, 0.5], k=1)[0]))
             G2.nodes[i]["account"] = list(account)
         elif pro_type < 0.7 and is_domain == False:
             #是普通主机
@@ -491,7 +493,7 @@ def Dy_generate_fat_tree(k,pro,T):
                 G2.nodes[i]["port_server_version"].append(port_server_version)
             account = set()
             for d in range(random.randint(1,2)):
-                account.add((random.choice(user),random.choice(password),random.choice(["root","admin","user"])))
+                account.add((random.choice(user),random.choice(password),random.choices(["root","admin","user"], weights=[0.3, 0.2, 0.5], k=1)[0]))
             G2.nodes[i]["account"] = list(account)
         elif pro_type>0.7 and pro_type<0.8 and is_domain == False:
             firewall_cve_,firewall_port_cve_ = firewall_cve(G2.nodes[i]["system"])
@@ -511,7 +513,7 @@ def Dy_generate_fat_tree(k,pro,T):
                 G2.nodes[i]["port_server_version"].append(port_server_version)
             account = set()
             for d in range(random.randint(1,2)):
-                account.add((random.choice(user),random.choice(password),random.choice(["root","admin","user"])))
+                account.add((random.choice(user),random.choice(password),random.choices(["root","admin","user"], weights=[0.3, 0.2, 0.5], k=1)[0]))
             G2.nodes[i]["account"] = list(account)
         else:
             #是数据库或服务器
@@ -532,9 +534,11 @@ def Dy_generate_fat_tree(k,pro,T):
                 G2.nodes[i]["port_server_version"].append(port_server_version)
             account = set()
             for d in range(random.randint(1,2)):
-                account.add((random.choice(user),random.choice(password),random.choice(["root","admin","user"])))
+                account.add((random.choice(user),random.choice(password),random.choices(["root","admin","user"], weights=[0.3, 0.2, 0.5], k=1)[0]))
             G2.nodes[i]["account"] = list(account)
+    #以上为生成静态网络图
     G_number = copy.deepcopy(G2)
+    is_work = True
     Dy_G.append(G_number)#保存0时刻的网络
     # G_0 = G_number.copy()
     G_0 = copy.deepcopy(G_number)
@@ -549,13 +553,20 @@ def Dy_generate_fat_tree(k,pro,T):
 
         #主机的工作状态变化
         if t % 12 == 0 and (t // 12) % 2 == 1:#下班时间，每隔12个时间点，更换一次
+            is_work = False
             G_ = host_work_off(G_, Host_work)
         elif t % 12 == 0 and (t // 12) % 2 == 0:#上班时间，每隔12个时间点，更换一次
-            G_ = host_work_on(G_0, G_, Host_work)
-
+            is_work = True
+            G_ = host_work_on(G_0, G_, Host_work,t_errors)
+        if is_work:
+            #当前是工作时间，故障候选节点是所有主机
+            host_candidata = {n for n in G_.nodes() if G_.nodes[n]['type'] == 'server'}
+        else:
+            #当前是休息时间，故障候选节点是主机节点-关机节点
+            host_candidata = {n for n in G_.nodes() if G_.nodes[n]['type'] == 'server'} - set(Host_work)
         #主机的故障状态变化
         real_error = []
-        for h in Host_work:
+        for h in host_candidata:
             #如果生成的随机数小于0.001，表示这个主机出现故障
             if random.random() < 0.001:
                 G_ = host_error_off(G_, [h])
@@ -565,6 +576,7 @@ def Dy_generate_fat_tree(k,pro,T):
         for m in t_errors:
             if m[0] + 72 == t:
                 G_ = host_error_on(G_0, G_, m[1])
+                t_errors.remove(m)
         Dy_G.append(G_)
     return Dy_G#生成了网络图
     
@@ -591,22 +603,24 @@ if __name__ == '__main__':
     # defense_type = 3
 
     # 静态\动态网络的生成及保存
-    static = 0
+    static = 1
     #同一个局域网内的节点有多大概率拥有同一个漏洞
     pro = 0.65
 
     #节点规模为10
-    K = 4
+    # K = 4
     
     #节点规模为100
     # K = 6
     #节点规模为1000
-    # K = 14
+    K = 14
     #生成网络
     for c in range(1):
         if static == 1:#静态网络
             graph = generate_fat_tree(K,pro)
             z = (f"./authentic_net/fattree/static/{len(graph.nodes())}_fattree{c}.gpickle")
+            # z = (f"./authentic_net/test/static/{len(graph.nodes())}_fattree{c}.gpickle")
+            os.makedirs(os.path.dirname(z), exist_ok=True)
             with open(z, 'wb') as f:
                 pickle.dump(graph, f, pickle.HIGHEST_PROTOCOL)
         else:#动态网络
@@ -614,6 +628,7 @@ if __name__ == '__main__':
             Gy_graphs = Dy_generate_fat_tree(K,pro, T = t_end)
             for i in range(len(Gy_graphs)):
                 z = (f"./authentic_net/fattree/dynamic/{len(Gy_graphs[0].nodes())}_fattree{c}/t{i}.gpickle")
+                # z = (f"./authentic_net/test/static/{len(graph.nodes())}_fattree{c}.gpickle")
                 os.makedirs(os.path.dirname(z), exist_ok=True)
                 with open(z, 'wb') as f:
                     pickle.dump(Gy_graphs[i], f, pickle.HIGHEST_PROTOCOL)
