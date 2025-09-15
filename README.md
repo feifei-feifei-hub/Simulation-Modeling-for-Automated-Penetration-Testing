@@ -14,7 +14,7 @@ A link to our paper can be found on arXiv: [https://arxiv.org/abs/2502.11588](#)
 
 ### (2) Required Packages
 Ensure you have the following Python libraries installed with the specified versions:
-python = 3.12.11
+python  3.12+
 
 ```plaintext
 dill==0.4.0
@@ -28,8 +28,10 @@ wheel==0.45.1
 ```
 
 ### (3) Create Environment and Install packages
-`conda create -n myenv python=3.12`
-`conda activate myenv`
+`conda create -n py312 python=3.12`
+
+`conda activate py312`
+
 `pip install -r requirements.txt`
 
 ## 2. Network Generator and Parameters
