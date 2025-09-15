@@ -29,11 +29,11 @@ wheel==0.45.1
 
 ### (3) Installation
 
-- **Create a conda environment:**: `conda create -n py312 python=3.12`
+- **Create a conda environment:** `conda create -n py312 python=3.12`
 
-- **Activate the conda environment:**: `conda activate py312`
+- **Activate the conda environment:** `conda activate py312`
 
-- **Install the required packages using pip:**: `pip install -r requirements.txt`
+- **Install the required packages using pip:** `pip install -r requirements.txt`
 
 ## 2. Network Generator and Parameters
 
