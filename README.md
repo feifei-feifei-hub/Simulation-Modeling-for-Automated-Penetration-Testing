@@ -12,30 +12,25 @@ A link to our paper can be found on arXiv: [https://arxiv.org/abs/2502.11588](#)
 ### (1) Dataset Preparation
 - Download the dataset from the NVD (National Vulnerability Database) website and place the compressed file in the `cve_data` folder.
 
-### (2) Required Libraries
+### (2) Required Packages
 Ensure you have the following Python libraries installed with the specified versions:
+python = 3.12.11
 
 ```plaintext
-gensim                    4.3.0
-networkx                  3.1
-nni                       3.0
-numpy                     1.24.3
-numpy-base                1.24.3
-nvidia-ml-py              12.535.133
-openpyxl                  3.0.10
-pandas                    2.0.3
-python                    3.8.18
-python-dateutil           2.8.2
-python-tzdata             2023.3
-python_abi                3.8
-pythonwebhdfs             0.2.3
-pytorch                   1.12.1
-torchaudio                0.12.1
-torchvision               0.13.1
-urllib3                   1.26.16
-zipp                      3.11.0
-zlib                      1.2.13
+dill==0.4.0
+matplotlib==3.10.6
+networkx==3.5
+openpyxl==3.1.5
+pandas==2.3.2
+simplejson==3.20.1
+setuptools==80.9.0
+wheel==0.45.1
 ```
+
+### (3) Create Environment and Install packages
+`conda create -n myenv python=3.12`
+`conda activate myenv`
+`pip install -r requirements.txt`
 
 ## 2. Network Generator and Parameters
 
