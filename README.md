@@ -67,6 +67,9 @@ wheel==0.45.1
 - **Baidu Netdisk**: [https://pan.baidu.com/s/1nUFRID4UuAHTjzUcSzhkGg](#)
 - **Extraction Code**: `vufi`
 
+### Figshare Link:
+- **Link**:[https://figshare.com/articles/dataset/network_data_zip/30134881?file=57989134]
+- **DOI**:[10.6084/m9.figshare.30134881]
 ### Description:
 - **Static Networks**:
   - **Generation**: Five standard networks are generated for each network setting combination.
