@@ -17,17 +17,39 @@ Ensure you have the following Python libraries installed with the specified vers
 python  3.12+
 
 ```plaintext
+python==3.12.11
 dill==0.4.0
+gensim==4.4.0
 matplotlib==3.10.6
+nni==3.0
 networkx==3.5
 openpyxl==3.1.5
 pandas==2.3.2
 simplejson==3.20.1
 setuptools==80.9.0
 wheel==0.45.1
+scikit-learn==1.7.2
+texttable==1.7.0
+torch==2.9.0
+torch-geometric==2.7.0
+tqdm==4.67.1
+pandas==2.3.3
+numpy==2.3.4
+seaborn==0.13.2
 ```
+You can use the following command to install these packages: `pip install -r requirements.txt`
 
 ### (3) Installation
+**Using venv (Recommended)**
+
+- **Create virtual environment:** `python -m venv py312`
+
+- **Activate environment:** `source py312/bin/activate`
+
+- **Install the required packages using pip:** `pip install -r requirements.txt`
+
+
+**Using conda(Alternative)
 
 - **Create a conda environment:** `conda create -n py312 python=3.12`
 
@@ -60,6 +82,11 @@ wheel==0.45.1
 - **Authentic Network (e.g., Tree Topology)**:
   - Set network parameters and static/dynamic network parameters (for dynamic networks, also set the termination time).
   - Run the script: `python authentic_tree.py`
+
+### (4) Evaluate Datasets Using Link Prediction
+- **Datasets Preprocessing**: `GPRP/preprocess.py`
+- **Pretrain**: `GPRP/pretrain.py`
+- **Fintune and Test the Model**: `GPRP/eval/finetune_link.py`
 
 ## 3. Network Datasets
 
