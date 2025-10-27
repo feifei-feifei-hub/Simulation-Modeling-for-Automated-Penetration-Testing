@@ -1,8 +1,8 @@
-# 输入层数 layers ;
-# 总的节点数 total;
-# 每一层的节点数目占总数目的比例，列表 layers_percent = []
-# 每一层内部的子网数量 Lan_num 
-# 每一层交换机占该层总数据的比例，列表 switchs_percent = [],除最后一层外，交换机数量最少为1
+# Input  layers ;
+#  total number of nodes ;
+# Layer node proportion: layers_percent = []
+# Number of subnets in each layer Lan_num 
+# The proportion of switches in each layer's total data: switchs_percent = [], at least 1 switch in each layer except the last
 import matplotlib.pyplot as plt
 import networkx as nx
 import random
@@ -18,7 +18,6 @@ import copy
 import pandas as pd
 
  
-# 先定义局域网、在定义局域网内的交换机，交换机和上一层的交换机相连接，上一层交换机再和上一层相连接
 def partitioned_layered_garph_generatin(layers,total,layers_percent,Lan_num,switchs_percent,pro):
     user = []
     with open('/root/feifei/8_network_generator/data_cve/user.txt', 'r', encoding='utf-8') as file:
@@ -28,24 +27,23 @@ def partitioned_layered_garph_generatin(layers,total,layers_percent,Lan_num,swit
     with open('/root/feifei/8_network_generator/data_cve/pass.txt', 'r', encoding='utf-8') as file:
         for line in file:
             password.append(line.strip())
-    #读取all_cve,all_type,all_type_list
+    #all_cve,all_type,all_type_list
     with open('/root/feifei/8_network_generator/data_cve/eng_all_type_list.json', 'r', encoding='utf-8') as file:
         all_type_list = json.load(file)
-    #读取excel文件
     all_cve = {}
     
     df = pd.read_excel("/root/feifei/8_network_generator/data_cve/all_cve_cvss_epss.xlsx")
     for index, row in df.iterrows():
-        cve_id = row['CVE_ID']  # 获取 CVE_ID 作为键
-        values = row.drop('CVE_ID').to_dict()  # 其他内容作为值
+        cve_id = row['CVE_ID']  # Get CVE_ID as key
+        values = row.drop('CVE_ID').to_dict()  # Other contents as value
 
-        # 处理可能为列表的字段
+        # Handle fields that may be lists
         for key, value in values.items():
             if isinstance(value, str) and value.startswith('[') and value.endswith(']'):
-                # 将字符串形式的列表转换为实际的列表
+                # Convert string representation of list to actual list
                 values[key] = eval(value)
 
-        # 将 CVE_ID 和其他内容存入字典
+        # Store CVE_ID and other contents in dictionary
         all_cve[cve_id] = values
     ports_ = [
     21, 22, 23, 25, 53, 80, 110, 111, 135, 139, 143, 443, 445, 993, 995,
@@ -54,24 +52,24 @@ def partitioned_layered_garph_generatin(layers,total,layers_percent,Lan_num,swit
     5900, 5984, 6379, 7001, 8000, 8008, 8081, 8088, 8090, 8443, 8888, 9090,
     9200, 9300, 11211, 27017, 27018, 28017, 50000, 50030, 50060, 50070,
     50075, 50090, 60010, 60030]
-    layers_num = [int(total*i) for i in layers_percent]#每一层拥有的主机数量
-    #print(layers_num)
+    layers_num = [int(total*i) for i in layers_percent]#Host count per layer
+    print(layers_num)  # Print the number of hosts in each layer
     graph_list = {}
-    each_Lan_node_num = []#每一个局域网具有的节点的总数量
-    lan_switchs_num = []#每一个局域网具有的交换机的数量
-    lan_switch_ID= []#每一个交换机的ID
+    each_Lan_node_num = []#Total number of nodes in each LAN
+    lan_switchs_num = []#Number of switches in each LAN
+    lan_switch_ID= []#ID of each switch
     start = 0
     end = 0
-    lan_ID = 0#用于计算当前是在生成哪一个局域网的ID
+    lan_ID = 0#ID for the current LAN being generated
     each_lan_node_id = []
     for i in range(layers):
-        each_Lan = layers_num[i]/Lan_num[i]#一层网络有多个局域网，各个局域网内部节点的数目是相同的
+        each_Lan = layers_num[i]/Lan_num[i]#Each layer has multiple LANs, with the same number of nodes in each LAN
         count = 0
-        #start和end是方便生成交换机ID定义的起点和终点
+        #start and end are defined for generating switch ID
         while count < Lan_num[i]:
-            each_Lan_node_num.append(int(each_Lan))#每一个局域网具有的节点的总数量
-            lan_switchs_num.append(math.ceil(switchs_percent[i]*each_Lan))#每一个局域网拥有的交换机的数量
-            lan_switch_ID_ = set()#局域网内交换机的ID
+            each_Lan_node_num.append(int(each_Lan))#Each LAN has the total number of nodes
+            lan_switchs_num.append(math.ceil(switchs_percent[i]*each_Lan))#Each LAN has the number of switches
+            lan_switch_ID_ = set()#IDs of switches within the LAN
             flag = True
             start = end
             end = end + int(each_Lan)
@@ -96,7 +94,7 @@ def partitioned_layered_garph_generatin(layers,total,layers_percent,Lan_num,swit
             k = random.choice(list(all_type_list["database"]))
         else:
             k = random.choice(all_type_list["soft"])
-        #这个局域网的通用CVE
+        #This LAN's common CVE
         for j in G_lans[i]:
             G_lans[i].nodes[j]["type"] = "server"
             G_lans[i].nodes[j]["lan_id"] = str(i)
@@ -104,7 +102,7 @@ def partitioned_layered_garph_generatin(layers,total,layers_percent,Lan_num,swit
             G_lans[i].nodes[j]["port_server_version"] = []
             G_lans[i].nodes[j]["software_version"] = []
             G_lans[i].nodes[j]["cve"] = []
-            if i == len(each_Lan_node_num)-1:#最后一层是数据库
+            if i == len(each_Lan_node_num)-1:#The last layer is the database
                 common_database_cve_,common_database_port_cve_ = common_database_cve(G_lans[i].nodes[j]["system"])
                 G_lans[i].nodes[j]["cve"] = list(common_database_cve_+common_database_port_cve_)
                 for m in common_database_cve_:
@@ -130,14 +128,14 @@ def partitioned_layered_garph_generatin(layers,total,layers_percent,Lan_num,swit
 
 
 
-    #生成交换机之间的连接，同层交换机不连接，交换机只与紧挨着的上一层交换机连接
+    #Connect switches across adjacent layers only, no same-layer connections.
     G_switchs = nx.Graph()
     count1 = 0
     while count1 < len(lan_switchs_num)-1:
         # for i in lan_switch_ID[count1]:
         #     for j in lan_switch_ID[count1+1]:
         #         G_switchs.add_edge(i,j)
-        #随机选择部分上层交换机连接到下层交换机
+        #Randomly select some upper-layer switches to connect to lower-layer switches
         for i in lan_switch_ID[count1]:
             num_connections = random.randint(1, len(lan_switch_ID[count1+1]))
             connected_switches = random.sample(lan_switch_ID[count1+1], num_connections)
@@ -147,13 +145,13 @@ def partitioned_layered_garph_generatin(layers,total,layers_percent,Lan_num,swit
     switch_cve = []
     domain_server = []
     for i in G_switchs:
-        G_switchs.nodes[i]["type"] = "switch"#从交换机相关漏洞中产生cve
+        G_switchs.nodes[i]["type"] = "switch"#Generate CVE from switch-related vulnerabilities
         G_switchs.nodes[i]["lan_id"] = "other"
         G_switchs.nodes[i]["port_server_version"] = []
         G_switchs.nodes[i]["system"] = random.choice(["os_windows","os_linux","os_ios","os_mac","os_unix"])
         if random.random() < 0.2:
             domain_server.append(i)
-            #是域交换机
+            #This is a domain switch
             G_switchs.nodes[i]["system"] = "os_windows"
             domain_cve = random.choice(all_type_list["domain"])
             G_switchs.nodes[i]["cve"] = domain_switch_cve(domain_cve)
@@ -164,14 +162,14 @@ def partitioned_layered_garph_generatin(layers,total,layers_percent,Lan_num,swit
                     version = random.choice(all_cve[m]["affectedversion"])
                 G_switchs.nodes[i]["software_version"].append(version)
             account = random.randint(1,3)
-            #设置域交换机的账户
+            #Set accounts for domain switches
             G_switchs.nodes[i]["account"] = []
             domain_account = (random.choice(user),random.choice(password),"domain")
             G_switchs.nodes[i]["account"].append(domain_account)
             account = random.randint(1,2)
             for j in range(account):
                 G_switchs.nodes[i]["account"].append((random.choice(user),random.choice(password),random.choices(["root","admin","user"], weights=[0.3, 0.2, 0.5], k=1)[0]))
-        else:#非域控交换机，普通交换机
+        else:#Non-domain switch, regular switch
             G_switchs.nodes[i]["cve"] = common_switch_cve(G_switchs.nodes[i]["system"])
             G_switchs.nodes[i]["software_version"] = []
             for m in G_switchs.nodes[i]["cve"]:
@@ -179,7 +177,7 @@ def partitioned_layered_garph_generatin(layers,total,layers_percent,Lan_num,swit
                 if len(all_cve[m]["affectedversion"]) != 0:
                     version = random.choice(all_cve[m]["affectedversion"])
                 G_switchs.nodes[i]["software_version"].append(version)
-            #设置普通交换机的账户
+            #Set accounts for regular switches
             account = random.randint(1,2)
             G_switchs.nodes[i]["account"] = []
             for j in range(account):
@@ -187,13 +185,13 @@ def partitioned_layered_garph_generatin(layers,total,layers_percent,Lan_num,swit
     # Host_work = random.sample(list(all_servers),int(0.3*len(all_servers)))
 
 
-    #将上面生成的交换机与局域网连接起来
+    #Connect switches to LANs 
     all_graph = []
     for i in G_lans.values():
         all_graph.append(i)
     all_graph.append(G_switchs)
     G = nx.compose_all(all_graph) 
-    #设定的是同一个局域网中的交换机是不能连接的，所以要把这些边删去
+    #remove connections between switches within the same LAN
     for i in lan_switch_ID:
         if len(i) > 1:
             #print(i)
@@ -202,7 +200,7 @@ def partitioned_layered_garph_generatin(layers,total,layers_percent,Lan_num,swit
                     if j != h:
                         G.add_edge(j,h)
                         G.remove_edge(j,h)
-    # 随机删除主机与交换机连接的一些边
+    # Randomly delete some edges connecting hosts and switches
     for i in G.nodes():
         if G.nodes[i]["type"] == "server":
             # neineighbors = list(G.neighbors(i))
@@ -216,7 +214,7 @@ def partitioned_layered_garph_generatin(layers,total,layers_percent,Lan_num,swit
             if len(to_remove) == len(switch_neighbors):
                 saved = random.choice(to_remove)
                 to_remove.remove(saved)
-            # 删除选中的边
+            # Remove selected edges
             for j in to_remove:
                 G.remove_edge(i, j)
             # for j in neineighbors:
@@ -226,22 +224,22 @@ def partitioned_layered_garph_generatin(layers,total,layers_percent,Lan_num,swit
 
 
     # nx.draw(G, with_labels=True, alpha=0.8, node_size=500)
-    # plt.savefig("graph.png")  # 保存为 PNG 文件
-    # plt.show()  # 显示图像（可选）
+    # plt.savefig("graph.png") 
+    # plt.show() 
     
     all_switches = {n for n in G.nodes() if G.nodes[n]['type'] == 'switch'}
     all_servers = {n for n in G.nodes() if G.nodes[n]['type'] == 'server'}
     Host_work = random.sample(list(all_servers),int(0.3*len(all_servers)))
     sorted_nodes = sorted(G.nodes())
-    #为G增加属性，交换机和最后一层数据库的节点已经设置完了，现在设置其他节点的属性
+    # Add attributes to G. The attributes for switches and the last layer of database nodes have been set. Now set the attributes for other nodes.
     pro_type = random.random()
     for i in all_servers:
         is_domain = False
         G.nodes[i]["type"] = "server"
-        #首先判断这个节点是不是已经被设置过属性了
+        # First check if this node has already been set with attributes
         Lan_id_cve = {}
         if "account" not in G.nodes[i].keys():
-            #说明这个节点没有设置过属性
+            #Node attributes not set.
             G.nodes[i]["account"] = []
             if len(set(G.neighbors(i)) & set(domain_server)) != 0:
                 is_domain = True
@@ -259,7 +257,7 @@ def partitioned_layered_garph_generatin(layers,total,layers_percent,Lan_num,swit
                 G.nodes[i]["software_version"] = []
                 G.nodes[i]["port_server_version"] = []
                 domain_host_cve_,domain_host_port_cve_ = domain_host_cve(domain_cve)
-                G.nodes[i]["cve"] = list(domain_host_cve_+domain_host_port_cve_)#域主机的漏洞全部重新设置
+                G.nodes[i]["cve"] = list(domain_host_cve_+domain_host_port_cve_)#Reset all vulnerabilities on the domain host.
                 for m in domain_host_cve_:
                     if len(all_cve[m]["affectedversion"]) != 0:
                         version = random.choice(all_cve[m]["affectedversion"])
@@ -278,11 +276,10 @@ def partitioned_layered_garph_generatin(layers,total,layers_percent,Lan_num,swit
                     account.add((random.choice(user),random.choice(password),random.choices(["root","admin","user"], weights=[0.3, 0.2, 0.5], k=1)[0]))
                 G.nodes[i]["account"] = list(account)
             elif pro_type < 0.7 and is_domain == False:
-                #是普通主机
                 common_host_cve_,common_host_port_cve_ = common_host_cve(G.nodes[i]["system"])
-                if random.random() > pro:#删除已经存在的漏洞
+                if random.random() > pro:# Delete existing vulnerabilities
                     G.nodes[i]["cve"] = list(common_host_cve_+common_host_port_cve_)
-                else:#在原来漏洞的基础上加上新的漏洞
+                else:# Add new vulnerabilities to existing ones
                     G.nodes[i]["cve"] = list(set(G.nodes[i]["cve"]+common_host_cve_+common_host_port_cve_))
                 G.nodes[i]["software_version"] = []
                 for m in list(set(G.nodes[i]["cve"]+common_host_cve_)):
@@ -302,11 +299,11 @@ def partitioned_layered_garph_generatin(layers,total,layers_percent,Lan_num,swit
                     account.add((random.choice(user),random.choice(password),random.choices(["root","admin","user"], weights=[0.3, 0.2, 0.5], k=1)[0]))
                 G.nodes[i]["account"] = list(account)
             elif pro_type>0.7 and pro_type<0.8 and is_domain == False:
-                #是防火墙
+                # Firewall
                 firewall_cve_,firewall_port_cve_ = firewall_cve(G.nodes[i]["system"])
-                if random.random() > pro:#删除已经存在的漏洞
+                if random.random() > pro:# Delete existing vulnerabilities
                     G.nodes[i]["cve"] = list(firewall_cve_+firewall_port_cve_)
-                else:#在原来漏洞的基础上加上新的漏洞
+                else:# Add new vulnerabilities to existing ones
                     G.nodes[i]["cve"] = list(set(G.nodes[i]["cve"]+firewall_cve_+firewall_port_cve_))
                 G.nodes[i]["software_version"] = []
                 for m in list(set(G.nodes[i]["cve"]+firewall_cve_)):
@@ -326,11 +323,11 @@ def partitioned_layered_garph_generatin(layers,total,layers_percent,Lan_num,swit
                     account.add((random.choice(user),random.choice(password),random.choices(["root","admin","user"], weights=[0.3, 0.2, 0.5], k=1)[0]))
                 G.nodes[i]["account"] = list(account)
             else:
-                #是数据库
+                # Database
                 common_database_cve_,common_database_port_cve_ = common_database_cve(G.nodes[i]["system"])
-                if random.random() > pro:#删除已经存在的漏洞
+                if random.random() > pro:# Delete existing vulnerabilities
                     G.nodes[i]["cve"] = list(common_database_cve_+common_database_port_cve_)
-                else:#在原来漏洞的基础上加上新的漏洞
+                else:# Add new vulnerabilities to existing ones
                     G.nodes[i]["cve"] = list(set(G.nodes[i]["cve"]+common_database_cve_+common_database_port_cve_))
                 G.nodes[i]["software_version"] = []
                 for m in list(set(G.nodes[i]["cve"]+common_database_cve_)):
@@ -349,7 +346,7 @@ def partitioned_layered_garph_generatin(layers,total,layers_percent,Lan_num,swit
                 for d in range(random.randint(1,2)):
                     account.add((random.choice(user),random.choice(password),random.choices(["root","admin","user"], weights=[0.3, 0.2, 0.5], k=1)[0]))
                 G.nodes[i]["account"] = list(account)
-    return G#生成了网络图
+    return G#generated graph G
 
 
 def Dy_partitioned_layered_garph_generatin(layers,total,layers_percent,Lan_num,switchs_percent,pro,T):
@@ -361,24 +358,24 @@ def Dy_partitioned_layered_garph_generatin(layers,total,layers_percent,Lan_num,s
     with open('/root/feifei/8_network_generator/data_cve/pass.txt', 'r', encoding='utf-8') as file:
         for line in file:
             password.append(line.strip())
-    #读取all_cve,all_type,all_type_list
+    #read all_cve,all_type,all_type_list
     with open('/root/feifei/8_network_generator/data_cve/eng_all_type_list.json', 'r', encoding='utf-8') as file:
         all_type_list = json.load(file)
-    #读取excel文件
+    #read excel file
     all_cve = {}
     
     df = pd.read_excel("/root/feifei/8_network_generator/data_cve/all_cve_cvss_epss.xlsx")
     for index, row in df.iterrows():
-        cve_id = row['CVE_ID']  # 获取 CVE_ID 作为键
-        values = row.drop('CVE_ID').to_dict()  # 其他内容作为值
+        cve_id = row['CVE_ID']  # Get CVE_ID as key
+        values = row.drop('CVE_ID').to_dict()  # Other content as value
 
-        # 处理可能为列表的字段
+        # Process fields that may be lists
         for key, value in values.items():
             if isinstance(value, str) and value.startswith('[') and value.endswith(']'):
-                # 将字符串形式的列表转换为实际的列表
+                # Convert string representation of list to actual list
                 values[key] = eval(value)
 
-        # 将 CVE_ID 和其他内容存入字典
+        # Store CVE_ID and other content in dictionary
         all_cve[cve_id] = values
     ports_ = [
     21, 22, 23, 25, 53, 80, 110, 111, 135, 139, 143, 443, 445, 993, 995,
@@ -387,24 +384,24 @@ def Dy_partitioned_layered_garph_generatin(layers,total,layers_percent,Lan_num,s
     5900, 5984, 6379, 7001, 8000, 8008, 8081, 8088, 8090, 8443, 8888, 9090,
     9200, 9300, 11211, 27017, 27018, 28017, 50000, 50030, 50060, 50070,
     50075, 50090, 60010, 60030]
-    layers_num = [int(total*i) for i in layers_percent]#每一层拥有的主机数量
+    layers_num = [int(total*i) for i in layers_percent]#Number of hosts per layer
     #print(layers_num)
     graph_list = {}
-    each_Lan_node_num = []#每一个局域网具有的节点的总数量
-    lan_switchs_num = []#每一个局域网具有的交换机的数量
-    lan_switch_ID= []#每一个交换机的ID
+    each_Lan_node_num = []#Total number of nodes in each LAN
+    lan_switchs_num = []#Number of switches in each LAN
+    lan_switch_ID= []#ID of each switch
     start = 0
     end = 0
-    lan_ID = 0#用于计算当前是在生成哪一个局域网的ID
+    lan_ID = 0#Used to calculate which LAN ID is being generated
     each_lan_node_id = []
     for i in range(layers):
-        each_Lan = layers_num[i]/Lan_num[i]#一层网络有多个局域网，各个局域网内部节点的数目是相同的
+        each_Lan = layers_num[i]/Lan_num[i]#Each layer has multiple LANs, and the number of nodes within each LAN is the same
         count = 0
-        #start和end是方便生成交换机ID定义的起点和终点
+        #start and end are defined as the starting and ending points for generating switch IDs
         while count < Lan_num[i]:
-            each_Lan_node_num.append(int(each_Lan))#每一个局域网具有的节点的总数量
-            lan_switchs_num.append(math.ceil(switchs_percent[i]*each_Lan))#每一个局域网拥有的交换机的数量
-            lan_switch_ID_ = set()#局域网内交换机的ID
+            each_Lan_node_num.append(int(each_Lan))#Total number of nodes in each LAN
+            lan_switchs_num.append(math.ceil(switchs_percent[i]*each_Lan))#Number of switches in each LAN
+            lan_switch_ID_ = set()#ID of each switch
             flag = True
             start = end
             end = end + int(each_Lan)
@@ -435,7 +432,7 @@ def Dy_partitioned_layered_garph_generatin(layers,total,layers_percent,Lan_num,s
             G_lans[i].nodes[j]["port_server_version"] = []
             G_lans[i].nodes[j]["software_version"] = []
             G_lans[i].nodes[j]["cve"] = []
-            if i == len(each_Lan_node_num)-1:#最后一层是数据库
+            if i == len(each_Lan_node_num)-1:#The last layer is the database    
                 common_database_cve_,common_database_port_cve_ = common_database_cve(G_lans[i].nodes[j]["system"])
                 G_lans[i].nodes[j]["cve"] = list(common_database_cve_+common_database_port_cve_)
                 for m in common_database_cve_:
@@ -458,14 +455,14 @@ def Dy_partitioned_layered_garph_generatin(layers,total,layers_percent,Lan_num,s
                 G_lans[i].nodes[j]["cve"].append(k)
               
 
-    #生成交换机之间的连接，同层交换机不连接，交换机只与紧挨着的上一层交换机连接
+    #Connect switches across adjacent layers only, no same-layer connections.
     G_switchs = nx.Graph()
     count1 = 0
     while count1 < len(lan_switchs_num)-1:
         # for i in lan_switch_ID[count1]:
         #     for j in lan_switch_ID[count1+1]:
         #         G_switchs.add_edge(i,j)
-        #随机选择部分上层交换机连接到下层交换机
+        #Connect a portion of upper-layer switches to lower-layer switches randomly
         for i in lan_switch_ID[count1]:
             num_connections = random.randint(1, len(lan_switch_ID[count1+1]))
             connected_switches = random.sample(lan_switch_ID[count1+1], num_connections)
@@ -475,13 +472,13 @@ def Dy_partitioned_layered_garph_generatin(layers,total,layers_percent,Lan_num,s
     switch_cve = []
     domain_server = []
     for i in G_switchs:
-        G_switchs.nodes[i]["type"] = "switch"#从交换机相关漏洞中产生cve
+        G_switchs.nodes[i]["type"] = "switch"#From switch-related vulnerabilities generate cve
         G_switchs.nodes[i]["lan_id"] = "other"
         G_switchs.nodes[i]["port_server_version"] = []
         G_switchs.nodes[i]["system"] = random.choice(["os_windows","os_linux","os_ios","os_mac","os_unix"])
         if random.random() < 0.2:
             domain_server.append(i)
-            #是域交换机
+            #This is a domain switch
             G_switchs.nodes[i]["system"] = "os_windows"
             domain_cve = random.choice(all_type_list["domain"])
             G_switchs.nodes[i]["cve"] = domain_switch_cve(domain_cve)
@@ -492,14 +489,14 @@ def Dy_partitioned_layered_garph_generatin(layers,total,layers_percent,Lan_num,s
                     version = random.choice(all_cve[m]["affectedversion"])
                 G_switchs.nodes[i]["software_version"].append(version)
             account = random.randint(1,3)
-            #设置域交换机的账户
+            #Set accounts for domain switches
             G_switchs.nodes[i]["account"] = []
             domain_account = (random.choice(user),random.choice(password),"domain")
             G_switchs.nodes[i]["account"].append(domain_account)
             account = random.randint(1,2)
             for j in range(account):
                 G_switchs.nodes[i]["account"].append((random.choice(user),random.choice(password),random.choices(["root","admin","user"], weights=[0.3, 0.2, 0.5], k=1)[0]))
-        else:#非域控交换机，普通交换机
+        else:#Non-domain switch, regular switch
             G_switchs.nodes[i]["cve"] = common_switch_cve(G_switchs.nodes[i]["system"])
             G_switchs.nodes[i]["software_version"] = []
             for m in G_switchs.nodes[i]["cve"]:
@@ -507,20 +504,20 @@ def Dy_partitioned_layered_garph_generatin(layers,total,layers_percent,Lan_num,s
                 if len(all_cve[m]["affectedversion"]) != 0:
                     version = random.choice(all_cve[m]["affectedversion"])
                 G_switchs.nodes[i]["software_version"].append(version)
-            #设置普通交换机的账户
+            #Set accounts for regular switches
             account = random.randint(1,2)
             G_switchs.nodes[i]["account"] = []
             for j in range(account):
                 G_switchs.nodes[i]["account"].append((random.choice(user),random.choice(password),random.choices(["root","admin","user"], weights=[0.3, 0.2, 0.5], k=1)[0]))
     # Host_work = random.sample(list(all_servers),int(0.3*len(all_servers)))
 
-    #将上面生成的交换机与局域网连接起来
+    #Connect the generated switches to the local area network
     all_graph = []
     for i in G_lans.values():
         all_graph.append(i)
     all_graph.append(G_switchs)
     G = nx.compose_all(all_graph) 
-    #设定的是同一个局域网中的交换机是不能连接的，所以要把这些边删去
+    #Switches in the same LAN cannot be connected, so these edges must be removed.
     for i in lan_switch_ID:
         if len(i) > 1:
             #print(i)
@@ -529,7 +526,7 @@ def Dy_partitioned_layered_garph_generatin(layers,total,layers_percent,Lan_num,s
                     if j != h:
                         G.add_edge(j,h)
                         G.remove_edge(j,h)
-    # 随机删除主机与交换机连接的一些边
+    # Randomly remove some edges connecting hosts and switches
     for i in G.nodes():
         if G.nodes[i]["type"] == "server":
             # neineighbors = list(G.neighbors(i))
@@ -543,7 +540,7 @@ def Dy_partitioned_layered_garph_generatin(layers,total,layers_percent,Lan_num,s
             if len(to_remove) == len(switch_neighbors):
                 saved = random.choice(to_remove)
                 to_remove.remove(saved)
-            # 删除选中的边
+            # Remove the selected edges
             for j in to_remove:
                 G.remove_edge(i, j)
             # for j in neineighbors:
@@ -553,8 +550,8 @@ def Dy_partitioned_layered_garph_generatin(layers,total,layers_percent,Lan_num,s
 
 
     # nx.draw(G, with_labels=True, alpha=0.8, node_size=500)
-    # plt.savefig("graph.png")  # 保存为 PNG 文件
-    # plt.show()  # 显示图像（可选）
+    # plt.savefig("graph.png")  
+    # plt.show() 
     all_switches = {n for n in G.nodes() if G.nodes[n]['type'] == 'switch'}
     all_servers = {n for n in G.nodes() if G.nodes[n]['type'] == 'server'}
     Host_work = random.sample(list(all_servers),int(0.3*len(all_servers)))
@@ -564,10 +561,10 @@ def Dy_partitioned_layered_garph_generatin(layers,total,layers_percent,Lan_num,s
     for i in all_servers:
         is_domain = False
         G.nodes[i]["type"] = "server"
-        #首先判断这个节点是不是已经被设置过属性了
+        # First, check if this node has already been set with attributes
         Lan_id_cve = {}
         if "account" not in G.nodes[i].keys():
-            #说明这个节点没有设置过属性
+            # This node has not been set with attributes
             G.nodes[i]["account"] = []
             if len(set(G.neighbors(i)) & set(domain_server)) != 0:
                 is_domain = True
@@ -585,7 +582,7 @@ def Dy_partitioned_layered_garph_generatin(layers,total,layers_percent,Lan_num,s
                 G.nodes[i]["software_version"] = []
                 G.nodes[i]["port_server_version"] = []
                 domain_host_cve_,domain_host_port_cve_ = domain_host_cve(domain_cve)
-                G.nodes[i]["cve"] = list(domain_host_cve_+domain_host_port_cve_)#域主机的漏洞全部重新设置
+                G.nodes[i]["cve"] = list(domain_host_cve_+domain_host_port_cve_)
                 for m in domain_host_cve_:
                     if len(all_cve[m]["affectedversion"]) != 0:
                         version = random.choice(all_cve[m]["affectedversion"])
@@ -604,11 +601,10 @@ def Dy_partitioned_layered_garph_generatin(layers,total,layers_percent,Lan_num,s
                     account.add((random.choice(user),random.choice(password),random.choices(["root","admin","user"], weights=[0.3, 0.2, 0.5], k=1)[0]))
                 G.nodes[i]["account"] = list(account)
             elif pro_type < 0.7 and is_domain == False:
-                #是普通主机
                 common_host_cve_,common_host_port_cve_ = common_host_cve(G.nodes[i]["system"])
-                if random.random() > pro:#删除已经存在的漏洞
+                if random.random() > pro:# Delete existing vulnerabilities
                     G.nodes[i]["cve"] = list(common_host_cve_+common_host_port_cve_)
-                else:#在原来漏洞的基础上加上新的漏洞
+                else:# Add new vulnerabilities to existing ones
                     G.nodes[i]["cve"] = list(set(G.nodes[i]["cve"]+common_host_cve_+common_host_port_cve_))
                 G.nodes[i]["software_version"] = []
                 for m in list(set(G.nodes[i]["cve"]+common_host_cve_)):
@@ -628,11 +624,11 @@ def Dy_partitioned_layered_garph_generatin(layers,total,layers_percent,Lan_num,s
                     account.add((random.choice(user),random.choice(password),random.choices(["root","admin","user"], weights=[0.3, 0.2, 0.5], k=1)[0]))
                 G.nodes[i]["account"] = list(account)
             elif pro_type>0.7 and pro_type<0.8 and is_domain == False:
-                #是防火墙
+                # This is a firewall
                 firewall_cve_,firewall_port_cve_ = firewall_cve(G.nodes[i]["system"])
-                if random.random() > pro:#删除已经存在的漏洞
+                if random.random() > pro:# Delete existing vulnerabilities
                     G.nodes[i]["cve"] = list(firewall_cve_+firewall_port_cve_)
-                else:#在原来漏洞的基础上加上新的漏洞
+                else:# Add new vulnerabilities to existing ones
                     G.nodes[i]["cve"] = list(set(G.nodes[i]["cve"]+firewall_cve_+firewall_port_cve_))
                 G.nodes[i]["software_version"] = []
                 for m in list(set(G.nodes[i]["cve"]+firewall_cve_)):
@@ -652,11 +648,11 @@ def Dy_partitioned_layered_garph_generatin(layers,total,layers_percent,Lan_num,s
                     account.add((random.choice(user),random.choice(password),random.choices(["root","admin","user"], weights=[0.3, 0.2, 0.5], k=1)[0]))
                 G.nodes[i]["account"] = list(account)
             else:
-                #是数据库
+                # This is a database
                 common_database_cve_,common_database_port_cve_ = common_database_cve(G.nodes[i]["system"])
-                if random.random() > pro:#删除已经存在的漏洞
+                if random.random() > pro:# Delete existing vulnerabilities
                     G.nodes[i]["cve"] = list(common_database_cve_+common_database_port_cve_)
-                else:#在原来漏洞的基础上加上新的漏洞
+                else:# Add new vulnerabilities to existing ones
                     G.nodes[i]["cve"] = list(set(G.nodes[i]["cve"]+common_database_cve_+common_database_port_cve_))
                 G.nodes[i]["software_version"] = []
                 for m in list(set(G.nodes[i]["cve"]+common_database_cve_)):
@@ -675,53 +671,51 @@ def Dy_partitioned_layered_garph_generatin(layers,total,layers_percent,Lan_num,s
                 for d in range(random.randint(1,2)):
                     account.add((random.choice(user),random.choice(password),random.choices(["root","admin","user"], weights=[0.3, 0.2, 0.5], k=1)[0]))
                 G.nodes[i]["account"] = list(account)
-    # 以上为生成静态图的代码
     # G_number = set_node_attribute(G, defense_type)
     G_number = copy.deepcopy(G)
     Dy_G = []
     t_errors = []
-    Dy_G.append(G_number)#保存0时刻的网络
+    Dy_G.append(G_number)#save the initial network at time t=0
     # G_0 = G_number.copy()
     is_work = True
     G_0 = copy.deepcopy(G_number)
     for t in range(1, T):
         # G_ = Dy_G[t-1].copy()
         G_ = copy.deepcopy(Dy_G[t-1])
-        # 常规变化，随机选择0.02的节点增强或减弱防御能力,常规变化的内容也要反馈到后面的修改中
         all_nodes_ = set(G_.nodes())
-        #为了维持稳定，交换机是不变化的，但是主机是可以变化的
+        # To maintain stability, switches do not change, but hosts can change
         all_servers_ = all_nodes_ - all_switches
         G_0,G_ = commen_change(G_0,G_, all_nodes_, all_switches, all_servers_)
 
-        #主机的工作状态变化
-        if t % 12 == 0 and (t // 12) % 2 == 1:#下班时间，每隔12个时间点，更换一次
+        # Host working state changes
+        if t % 12 == 0 and (t // 12) % 2 == 1:# Off work time, change every 12 time points
             is_work = False
             G_ = host_work_off(G_, Host_work)
-        elif t % 12 == 0 and (t // 12) % 2 == 0:#上班时间，每隔12个时间点，更换一次
+        elif t % 12 == 0 and (t // 12) % 2 == 0:# On work time, change every 12 time points
             is_work = True
             G_ = host_work_on(G_0, G_, Host_work,t_errors)
 
-        #主机的故障状态变化
+        # Host fault state changes
         real_error = []
         if is_work:
-            #当前是工作时间，故障候选节点是所有主机
+            # Current is working time, fault candidate nodes are all hosts
             host_candidata = {n for n in G_.nodes() if G_.nodes[n]['type'] == 'server'}
         else:
-            #当前是休息时间，故障候选节点是主机节点-关机节点
+            # Current is rest time, fault candidate nodes are host nodes - shutdown nodes
             host_candidata = {n for n in G_.nodes() if G_.nodes[n]['type'] == 'server'} - set(Host_work)
         for h in host_candidata:
-            #如果生成的随机数小于0.001，表示这个主机出现故障
+            # If the generated random number is less than 0.001, it indicates that this host has failed
             if random.random() < 0.001:
                 G_ = host_error_off(G_, [h])
                 real_error.append(h)
-        if len(real_error) != 0:#这个时刻产生了故障
-            t_errors.append([t,real_error])#记录故障时刻
+        if len(real_error) != 0:# Fault occurred at this moment
+            t_errors.append([t,real_error])# Record fault moment
         for m in t_errors:
             if m[0] + 72 == t:
                 G_ = host_error_on(G_0, G_, m[1])
                 t_errors.remove(m)
         Dy_G.append(G_)
-    return Dy_G#生成了网络图
+    return Dy_G# Generated network graph
     
 
 
@@ -743,38 +737,38 @@ def load(fname):
 
 if __name__ == '__main__':
     # save(graph, "./graph.json")
-    #设置生成数值模拟网络类型，defense_type = 1,2,3
+    # Set the type of numerical simulation network, defense_type = 1,2,3
     # defense_type = 1
     # defense_type = 2
     # defense_type = 3
 
-    # 静态\动态网络的生成及保存
-    # static = 0 #动态网络
-    static = 1#静态网络
+    # Static/Dynamic network generation and saving
+    # static = 0 # Dynamic network
+    static = 1 # Static network
 
-    #节点规模为10
+    #node scale 10
     # layers = 3
     # total = 20
     # layers_percent = [0.6,0.3,0.1]
     # Lan_num = [2,1,1]
     # switchs_percent=[0.2,0.2,0.2]
-    #节点规模为100
+    #node scale 100
     # layers = 4
     # total = 100
     # layers_percent = [0.5,0.3,0.1,0.1]
     # Lan_num = [5,2,2,1]
     # switchs_percent=[0.2,0.2,0.2,0.2]
-    #节点规模为1000
+    #node scale 1000
     layers = 4
     total = 1000
     layers_percent = [0.5,0.3,0.1,0.1]
     Lan_num = [5,2,2,1]
     switchs_percent=[0.2,0.2,0.2,0.2]
-    #生成网络
+
     for c in range(1):
         pro = 0.65#同一个局域网内部的节点哟多大的可能性拥有同一个cve
         # np.random.seed(2077)
-        if static == 1:#静态网络
+        if static == 1:#static network
             graph = partitioned_layered_garph_generatin(layers,total,layers_percent,Lan_num,switchs_percent,pro)
             # z = (f"./authentic_net/partitioned_layered/static/{len(graph.nodes())}_net{c}.gpickle")
             z = (f"./authentic_net/test/static/{len(graph.nodes())}_net{c}.gpickle")
@@ -783,7 +777,7 @@ if __name__ == '__main__':
                 pickle.dump(graph, f, pickle.HIGHEST_PROTOCOL)
         #print(graph.nodes(data = True))
         #nx.write_gpickle(graph, "test_1000_2.gpickle")
-        else:#动态网络
+        else:#dynamic network
             t_end = 100
             Gy_graphs = Dy_partitioned_layered_garph_generatin(layers,total,layers_percent,Lan_num,switchs_percent,pro, T = t_end)
             for i in range(len(Gy_graphs)):

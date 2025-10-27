@@ -73,6 +73,8 @@ parser.add_argument('--batch_size', type=int, default=128,
                     help='Number of output nodes for training')    
 parser.add_argument('--clip', type=float, default=0.5,
                     help='Gradient Norm Clipping')  
+parser.add_argument('--net_type', type=str, default='fat',
+                    help='Type of network architecture')  
 
 args = parser.parse_args()
 args_print(args)
@@ -90,14 +92,14 @@ pre_target_nodes = []
 train_target_nodes = []
 for c in range(11):
     if c < 10:#预训练图
-        graph_reddit_: Graph = dill.load(open(f'GPRP/datadrive/dataset/pre_graph_{c}.pk', 'rb'))
+        graph_reddit_: Graph = dill.load(open(f'GPRP/datadrive/{args.net_type}_dataset/pre_graph_{c}.pk', 'rb'))
         pre_target_node = graph_reddit_.pre_target_nodes
         pre_target_node = np.concatenate([pre_target_node, np.ones(len(pre_target_node))]).reshape(2, -1).transpose()#-1表示列数自动计算，transpose()函数的作用就是调换数组的行列值的索引值
         pre_target_nodes.append(pre_target_node)
         graphs.append(graph_reddit_)
 
     elif c >= 10 and c <11:#训练图
-        graph_reddit_: Graph = dill.load(open(f'GPRP/datadrive/dataset/train_graph_{c}.pk', 'rb'))
+        graph_reddit_: Graph = dill.load(open(f'GPRP/datadrive/{args.net_type}_dataset/train_graph_{c}.pk', 'rb'))
         train_target_node = graph_reddit_.train_target_nodes
         train_target_node = np.concatenate([train_target_node, np.ones(len(train_target_node))]).reshape(2, -1).transpose()
 #转换过来就是array([[id,1],[id,1]])

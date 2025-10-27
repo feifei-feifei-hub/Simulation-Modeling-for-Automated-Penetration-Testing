@@ -13,10 +13,10 @@ from authentic_utils import domain_switch_cve,domain_host_cve,firewall_cve,commo
 
 sys.path.append(os.getcwd())
 # from data_cve.CVE_detail import Read_data   
-#核心交换机数量core_switch_num,汇聚交换机数量aggregation_switch_num,接入交换机数量edge_switch_num,主机数量host_num
-#每个核心交换机连接的汇聚交换机数量core_aggregation={0:6},每个汇聚交换机连接的接入交换机数量aggregation_edge={0:2,1:2,2:2,3:2,4:2,5:2}
+# The number of core switches: core_switch_num, aggregation switches: aggregation_switch_num, edge switches: edge_switch_num, and hosts: host_num.
+# Each core switch connects to aggregation switches: core_aggregation = {0: 6}.
+# Each aggregation switch connects to edge switches: aggregation_edge = {0: 2, 1: 2, 2: 2, 3: 2, 4: 2, 5: 2}.
 def tree(core_switch_num,core_aggregation, aggregation_switch_num,aggregation_edge,edge_switch_num,host_num,pro):
-    #读取各个文件
     user = []
     with open('/root/feifei/8_network_generator/data_cve/user.txt', 'r', encoding='utf-8') as file:
         for line in file:
@@ -25,24 +25,24 @@ def tree(core_switch_num,core_aggregation, aggregation_switch_num,aggregation_ed
     with open('/root/feifei/8_network_generator/data_cve/pass.txt', 'r', encoding='utf-8') as file:
         for line in file:
             password.append(line.strip())
-    #读取all_cve,all_type,all_type_list
+    #read all_cve,all_type,all_type_list
     with open('/root/feifei/8_network_generator/data_cve/eng_all_type_list.json', 'r', encoding='utf-8') as file:
         all_type_list = json.load(file)
-    #读取excel文件
+    #read excel file
     all_cve = {}
     
     df = pd.read_excel("/root/feifei/8_network_generator/data_cve/all_cve_cvss_epss.xlsx")
     for index, row in df.iterrows():
-        cve_id = row['CVE_ID']  # 获取 CVE_ID 作为键
-        values = row.drop('CVE_ID').to_dict()  # 其他内容作为值
+        cve_id = row['CVE_ID']  # Get CVE_ID as key
+        values = row.drop('CVE_ID').to_dict()  # Other contents as value
 
-        # 处理可能为列表的字段
+        # Handle fields that may be lists
         for key, value in values.items():
             if isinstance(value, str) and value.startswith('[') and value.endswith(']'):
-                # 将字符串形式的列表转换为实际的列表
+                # Convert string representation of list to actual list
                 values[key] = eval(value)
 
-        # 将 CVE_ID 和其他内容存入字典
+        # Store CVE_ID and other contents in the dictionary
         all_cve[cve_id] = values
     ports_ = [
     21, 22, 23, 25, 53, 80, 110, 111, 135, 139, 143, 443, 445, 993, 995,
@@ -54,7 +54,7 @@ def tree(core_switch_num,core_aggregation, aggregation_switch_num,aggregation_ed
 
 
 
-    lan_ID = 0#用于计算当前是在生成哪一个局域网的ID
+    lan_ID = 0  # Used to calculate which LAN ID is being generated
     start = 0
     end = 0
     each_lan_node_id = []
@@ -66,30 +66,29 @@ def tree(core_switch_num,core_aggregation, aggregation_switch_num,aggregation_ed
     count = 0
     host_per_edge = int(host_num/(int(edge_switch_num)))
     for i in range(core_switch_num):
-        G.add_node(i)#添加核心交换机
+        G.add_node(i)  # add core switch
         G_core.add_node(i)
         count += 1
         for j in range(core_aggregation[i]):
             j_count = count
             G_aggregation.add_node(j_count)
-            G.add_node(j_count)#添加汇聚交换机
+            G.add_node(j_count)  # add aggregation switch
             G.add_edge(i,j_count)
             count += 1
             for k in range(aggregation_edge[j]):
                 k_count = count
                 G_edge.add_node(k_count)
-                G.add_node(k_count)
+                G.add_node(k_count)  # add edge switch
                 G.add_edge(j_count,k_count)
                 count += 1
-    #这里已经添加了所有的交换机,给交换机增加属性
+    # All switches have been added, now adding attributes to switches
     for i in G.nodes():
         G.nodes[i]["type"] = "switch"
         G.nodes[i]["lan_id"] = "other"
         G.nodes[i]["port_server_version"] = []
         G.nodes[i]["system"] = random.choice(["os_windows","os_linux","os_ios","os_mac","os_unix"])#all_cve,all_type,all_type_list
-        #判断当前交换机是否为域交换机
+        #Determine if the current switch is a domain switch.
         if random.random() < 0.2:
-            #是域交换机
             G.nodes[i]["system"] = "os_windows"
             domain_cve = random.choice(all_type_list["domain"])
             G.nodes[i]["cve"] = domain_switch_cve(domain_cve)
@@ -100,14 +99,13 @@ def tree(core_switch_num,core_aggregation, aggregation_switch_num,aggregation_ed
                     version = random.choice(all_cve[m]["affectedversion"])
                 G.nodes[i]["software_version"].append(version)
             account = random.randint(1,3)
-            #设置域交换机的账户
             G.nodes[i]["account"] = []
             domain_account = (random.choice(user),random.choice(password),"domain")
             G.nodes[i]["account"].append(domain_account)
             account = random.randint(1,2)
             for j in range(account):
                 G.nodes[i]["account"].append((random.choice(user),random.choice(password),random.choices(["root","admin","user"], weights=[0.3, 0.2, 0.5], k=1)[0]))
-        else:#非域控交换机，普通交换机
+        else:  # Non-domain switch, regular switch
             G.nodes[i]["cve"] = common_switch_cve(G.nodes[i]["system"])
             G.nodes[i]["software_version"] = []
             for m in G.nodes[i]["cve"]:
@@ -115,27 +113,26 @@ def tree(core_switch_num,core_aggregation, aggregation_switch_num,aggregation_ed
                 if len(all_cve[m]["affectedversion"]) != 0:
                     version = random.choice(all_cve[m]["affectedversion"])
                 G.nodes[i]["software_version"].append(version)
-            #设置普通交换机的账户
             account = random.randint(1,2)
             G.nodes[i]["account"] = []
             for j in range(account):
                 G.nodes[i]["account"].append((random.choice(user),random.choice(password),random.choices(["root","admin","user"], weights=[0.3, 0.2, 0.5], k=1)[0]))
-    for i in G_edge.nodes():#对于每一个接入交换机
-        #创建一个子网内部全连接图
+    for i in G_edge.nodes():  # For each access switch
+        # Create a fully connected graph within the subnet
         all_node_now = len(G.nodes())
         G_H = nx.Graph()
         G_H.add_node(i,**G.nodes[i])
         count += 1
         common_cve = random.choice(all_type_list["soft"])
         is_domain = False
-        #首先判断当前的交换机是否为域交换机
+        # First, determine if the current switch is a domain switch
         for h in G.nodes[i]["account"]:
             if h[2] == "domain":
                 domain_account = h
                 is_domain = True
                 break
-        if is_domain == True:
-            #域交换机，有一个域漏洞
+        if is_domain:  # Simplified condition check
+            # Domain switch, has a domain vulnerability
             for m in G.nodes[i]["cve"]:
                 if m in all_type_list["domain"]:
                     domain_cve = m
@@ -150,7 +147,7 @@ def tree(core_switch_num,core_aggregation, aggregation_switch_num,aggregation_ed
             G_H.nodes[all_node_now]["port_server_version"] = []
 
             if is_domain:
-                #是域主机
+
                 G_H.nodes[all_node_now]["system"] = "os_windows"
                 G_H.nodes[all_node_now]["software_version"] = []
                 G_H.nodes[all_node_now]["port_server_version"] = []
@@ -177,9 +174,8 @@ def tree(core_switch_num,core_aggregation, aggregation_switch_num,aggregation_ed
                 G_H.nodes[all_node_now]["account"] = list(account)
                 break
             elif pro_type < 0.7 and is_domain == False:
-                #普通主机
                 common_host_cve_,common_host_port_cve_ = common_host_cve(G_H.nodes[all_node_now]["system"])
-                if random.random() < pro:#有一个公共漏洞
+                if random.random() < pro:
                     common_host_cve_.append(common_cve)
                 G_H.nodes[all_node_now]["cve"] = list(common_host_cve_+common_host_port_cve_)
                 G_H.nodes[all_node_now]["software_version"] = []
@@ -200,7 +196,7 @@ def tree(core_switch_num,core_aggregation, aggregation_switch_num,aggregation_ed
                     account.add((random.choice(user),random.choice(password),random.choices(["root","admin","user"], weights=[0.3, 0.2, 0.5], k=1)[0]))
                 G_H.nodes[all_node_now]["account"] = list(account)
             elif pro_type > 0.7 and pro_type < 0.8 and is_domain == False:
-                #防火墙
+                #Firewall
                 firewall_cve_,firewall_port_cve_ = firewall_cve(G_H.nodes[all_node_now]["system"])
                 G_H.nodes[all_node_now]["cve"] = list(firewall_cve_+firewall_port_cve_)
                 G_H.nodes[all_node_now]["software_version"] = []
@@ -222,7 +218,7 @@ def tree(core_switch_num,core_aggregation, aggregation_switch_num,aggregation_ed
                     account.add((random.choice(user),random.choice(password),random.choices(["root","admin","user"], weights=[0.3, 0.2, 0.5], k=1)[0]))
                 G_H.nodes[all_node_now]["account"] = list(account)
             else:
-                #数据库或服务器
+                #Database or server
                 common_database_cve_,common_database_port_cve_ = common_database_cve(G_H.nodes[all_node_now]["system"])
                 G_H.nodes[all_node_now]["cve"] = list(common_database_cve_+common_database_port_cve_)
                 G_H.nodes[all_node_now]["software_version"] = []
@@ -249,7 +245,7 @@ def tree(core_switch_num,core_aggregation, aggregation_switch_num,aggregation_ed
             for s in G_H.nodes():
                 if j != s:
                     G_H.add_edge(j,s)
-        #将子网中的节点添加到总网络中
+        #Add the nodes from the subnet to the overall network.
         G = nx.compose(G,G_H)
     # G_number = set_node_attribute(G, defense_type)
     return G
@@ -263,24 +259,23 @@ def Dy_tree(core_switch_num,core_aggregation, aggregation_switch_num,aggregation
     with open('/root/feifei/8_network_generator/data_cve/pass.txt', 'r', encoding='utf-8') as file:
         for line in file:
             password.append(line.strip())
-    #读取all_cve,all_type,all_type_list
     with open('/root/feifei/8_network_generator/data_cve/eng_all_type_list.json', 'r', encoding='utf-8') as file:
         all_type_list = json.load(file)
-    #读取excel文件
+    
     all_cve = {}
     
     df = pd.read_excel("/root/feifei/8_network_generator/data_cve/all_cve_cvss_epss.xlsx")
     for index, row in df.iterrows():
-        cve_id = row['CVE_ID']  # 获取 CVE_ID 作为键
-        values = row.drop('CVE_ID').to_dict()  # 其他内容作为值
+        cve_id = row['CVE_ID']  # Get CVE_ID as key
+        values = row.drop('CVE_ID').to_dict()  # Other content as value
 
-        # 处理可能为列表的字段
+        # Process fields that may be lists
         for key, value in values.items():
             if isinstance(value, str) and value.startswith('[') and value.endswith(']'):
-                # 将字符串形式的列表转换为实际的列表
+                # Convert string representation of list to actual list
                 values[key] = eval(value)
 
-        # 将 CVE_ID 和其他内容存入字典
+        # Store CVE_ID and other content in dictionary
         all_cve[cve_id] = values
     ports_ = [
     21, 22, 23, 25, 53, 80, 110, 111, 135, 139, 143, 443, 445, 993, 995,
@@ -290,14 +285,14 @@ def Dy_tree(core_switch_num,core_aggregation, aggregation_switch_num,aggregation
     9200, 9300, 11211, 27017, 27018, 28017, 50000, 50030, 50060, 50070,
     50075, 50090, 60010, 60030]
 
-    Dy_G = []#用于保存动态网络
-    # 动态网络的变化特点：设置一个两个概率，一个是Host_work的概率，固定这一部分节点，每隔24个时间点，更换一次。另一个是Host_error的概率，从除了交换机以外的所有节点中随机选择机型关闭，并在72个时间点之后重新开启。
-    #先生成0时刻的网络图，保存0时刻的交换机、主机节点集合，然后基于0时刻的网络图进行动态变化
-
-    #故障时刻表
+    Dy_G = []# Dynamic network graph list
+    # Network Dynamics Characteristics: Set two probabilities. One is the Host_work probability, which fixes a portion of nodes and changes them every 24 time points. The other is the Host_error probability, which randomly selects machines (from all nodes except switches) to shut down and restarts them after 72 time points.
+    #First, generate the network graph at time 0 and save the sets of switch and host nodes for that time. Then, based on the initial network graph, simulate the dynamic changes.
+    
+    # Fault time table
     t_errors = []
-    is_work = True#表示当前是上班时间
-    lan_ID = 0#用于计算当前是在生成哪一个局域网的ID
+    is_work = True# Indicates current working hours
+    lan_ID = 0# Used to calculate which LAN ID is being generated
     start = 0
     end = 0
     each_lan_node_id = []
@@ -309,13 +304,13 @@ def Dy_tree(core_switch_num,core_aggregation, aggregation_switch_num,aggregation
     count = 0
     host_per_edge = int(host_num/(int(edge_switch_num)))
     for i in range(core_switch_num):
-        G.add_node(i)#添加核心交换机
+        G.add_node(i)# add core switch
         G_core.add_node(i)
         count += 1
         for j in range(core_aggregation[i]):
             j_count = count
             G_aggregation.add_node(j_count)
-            G.add_node(j_count)#添加汇聚交换机
+            G.add_node(j_count)# add aggregation switch
             G.add_edge(i,j_count)
             count += 1
             for k in range(aggregation_edge[j]):
@@ -324,16 +319,15 @@ def Dy_tree(core_switch_num,core_aggregation, aggregation_switch_num,aggregation
                 G.add_node(k_count)
                 G.add_edge(j_count,k_count)
                 count += 1
-    #这里已经添加了所有的交换机
+    # All switches have been added here
     all_switches = set(G.nodes())
     for i in G.nodes():
         G.nodes[i]["type"] = "switch"
         G.nodes[i]["lan_id"] = "other"
         G.nodes[i]["port_server_version"] = []
         G.nodes[i]["system"] = random.choice(["os_windows","os_linux","os_ios","os_mac","os_unix"])#all_cve,all_type,all_type_list
-        #判断当前交换机是否为域交换机
         if random.random() < 0.2:
-            #是域交换机
+            # add domain switch
             domain_cve = random.choice(all_type_list["domain"])
             G.nodes[i]["cve"] = domain_switch_cve(domain_cve)
             G.nodes[i]["software_version"] = []
@@ -343,14 +337,13 @@ def Dy_tree(core_switch_num,core_aggregation, aggregation_switch_num,aggregation
                     version = random.choice(all_cve[m]["affectedversion"])
                 G.nodes[i]["software_version"].append(version)
             account = random.randint(1,3)
-            #设置域交换机的账户
             G.nodes[i]["account"] = []
             domain_account = (random.choice(user),random.choice(password),"domain")
             G.nodes[i]["account"].append(domain_account)
             account = random.randint(1,2)
             for j in range(account):
                 G.nodes[i]["account"].append((random.choice(user),random.choice(password),random.choices(["root","admin","user"], weights=[0.3, 0.2, 0.5], k=1)[0]))
-        else:#非域控交换机，普通交换机
+        else:# non-domain switch, regular switch
             G.nodes[i]["cve"] = common_switch_cve(G.nodes[i]["system"])
             G.nodes[i]["software_version"] = []
             for m in G.nodes[i]["cve"]:
@@ -358,27 +351,25 @@ def Dy_tree(core_switch_num,core_aggregation, aggregation_switch_num,aggregation
                 if len(all_cve[m]["affectedversion"]) != 0:
                     version = random.choice(all_cve[m]["affectedversion"])
                 G.nodes[i]["software_version"].append(version)
-            #设置普通交换机的账户
             account = random.randint(1,2)
             G.nodes[i]["account"] = []
             for j in range(account):
                 G.nodes[i]["account"].append((random.choice(user),random.choice(password),random.choices(["root","admin","user"], weights=[0.3, 0.2, 0.5], k=1)[0]))
-    for i in G_edge.nodes():#对于每一个接入交换机
-        #创建一个子网内部全连接图
+    for i in G_edge.nodes():# For each access switch
         all_node_now = len(G.nodes())
         G_H = nx.Graph()
         G_H.add_node(i,**G.nodes[i])
         count += 1
         common_cve = random.choice(all_type_list["soft"])
         is_domain = False
-        #首先判断当前的交换机是否为域交换机
+        # First, determine if the current switch is a domain switch
         for h in G.nodes[i]["account"]:
             if h[2] == "domain":
                 domain_account = h
                 is_domain = True
                 break
         if is_domain == True:
-            #域交换机，有一个域漏洞
+            # Domain switch, has a domain vulnerability
             for m in G.nodes[i]["cve"]:
                 if m in all_type_list["domain"]:
                     domain_cve = m
@@ -392,7 +383,6 @@ def Dy_tree(core_switch_num,core_aggregation, aggregation_switch_num,aggregation
             G_H.nodes[all_node_now]["port_server_version"] = []
             pro_type = random.random()
             if is_domain:
-                #是域主机
                 G_H.nodes[all_node_now]["system"] = "os_windows"
                 G_H.nodes[all_node_now]["software_version"] = []
                 G_H.nodes[all_node_now]["port_server_version"] = []
@@ -417,9 +407,9 @@ def Dy_tree(core_switch_num,core_aggregation, aggregation_switch_num,aggregation
                     account.add((random.choice(user),random.choice(password),random.choices(["root","admin","user"], weights=[0.3, 0.2, 0.5], k=1)[0]))
                 G_H.nodes[all_node_now]["account"] = list(account)
             elif pro_type < 0.7 and is_domain == False:
-                #普通主机
+                # Ordinary host
                 common_host_cve_,common_host_port_cve_ = common_host_cve(G_H.nodes[all_node_now]["system"])
-                if random.random() < pro:#有一个公共漏洞
+                if random.random() < pro:# There is a common vulnerability
                     common_host_cve_.append(common_cve)
                 G_H.nodes[all_node_now]["cve"] = list(common_host_cve_+common_host_port_cve_)
                 G_H.nodes[all_node_now]["software_version"] = []
@@ -440,7 +430,7 @@ def Dy_tree(core_switch_num,core_aggregation, aggregation_switch_num,aggregation
                     account.add((random.choice(user),random.choice(password),random.choices(["root","admin","user"], weights=[0.3, 0.2, 0.5], k=1)[0]))
                 G_H.nodes[all_node_now]["account"] = list(account)
             elif pro_type > 0.7 and pro_type < 0.8 and is_domain == False:
-                #防火墙
+                # Firewall
                 firewall_cve_,firewall_port_cve_ = firewall_cve(G_H.nodes[all_node_now]["system"])
                 G_H.nodes[all_node_now]["cve"] = list(firewall_cve_+firewall_port_cve_)
                 G_H.nodes[all_node_now]["software_version"] = []
@@ -461,7 +451,7 @@ def Dy_tree(core_switch_num,core_aggregation, aggregation_switch_num,aggregation
                     account.add((random.choice(user),random.choice(password),random.choices(["root","admin","user"], weights=[0.3, 0.2, 0.5], k=1)[0]))
                 G_H.nodes[all_node_now]["account"] = list(account)
             else:
-                #数据库或服务器
+                # Database or server
                 common_database_cve_,common_database_port_cve_ = common_database_cve(G_H.nodes[all_node_now]["system"])
                 G_H.nodes[all_node_now]["cve"] = list(common_database_cve_+common_database_port_cve_)
                 G_H.nodes[all_node_now]["software_version"] = []
@@ -489,51 +479,49 @@ def Dy_tree(core_switch_num,core_aggregation, aggregation_switch_num,aggregation
             for s in G_H.nodes():
                 if j != s:
                     G_H.add_edge(j,s)
-        #将子网中的节点添加到总网络中
+        # Add the nodes from the subnet to the overall network.
         G = nx.compose(G,G_H)
 
     # G_number = set_node_attribute(G, defense_type)
-    #动态网络的变化
+    # Dynamic network changes
     G_number = copy.deepcopy(G)
-    Dy_G.append(G_number)#保存0时刻的网络
-    #获取主机类型的节点
+    Dy_G.append(G_number)  # Save the network at time 0
+    # Get the nodes of host types
     all_nodes = set(G_number.nodes())
     all_servers = all_nodes - all_switches
-    Host_work = random.sample(list(all_servers),int(0.3*len(all_servers)))
+    Host_work = random.sample(list(all_servers), int(0.3 * len(all_servers)))
     # Host_error = random.sample(all_servers,int(0.3*len(all_servers)))
     G_0 = copy.deepcopy(G_number)
-    #从G_number.nodes()中选择一部分节点作为Host_work
+    # Select a portion of nodes from G_number.nodes() as Host_work
     for t in range(1, T):
-        #使用深拷贝,防止G_的变化影响G_number
         G_ = copy.deepcopy(Dy_G[t-1])
         # G_ = Dy_G[t-1].deepcopy()
-        # 常规变化，随机选择0.02的节点增强或减弱防御能力
+        # Regular changes, randomly select 0.001 of nodes to enhance or weaken defense capabilities
         all_nodes_ = set(G_.nodes())
-        #为了维持稳定，交换机是不变化的，但是主机是可以变化的
-        all_severs_ = all_nodes_ - all_switches
-        G_0,G_ = commen_change(G_0,G_, all_nodes_, all_switches, all_severs_)
-        #主机的工作状态变化
-        if t % 12 == 0 and (t // 12) % 2 == 1:#下班时间，每隔12个时间点，更换一次
-            is_work = False#表示当前是上班时间
+        # To maintain stability, the switches remain unchanged, but the hosts can change.
+        all_servers_ = all_nodes_ - all_switches
+        G_0,G_ = commen_change(G_0,G_, all_nodes_, all_switches, all_servers_)
+        # Changes in the host's operational status.
+        if t % 12 == 0 and (t // 12) % 2 == 1:  # After hours, change every 12 time points.
+            is_work = False  # Indicates current is off-work time
             G_ = host_work_off(G_, Host_work)
-        elif t % 12 == 0 and (t // 12) % 2 == 0:#上班时间，每隔12个时间点，更换一次
+        elif t % 12 == 0 and (t // 12) % 2 == 0:  # Working hours, change every 12 time points.
             G_ = host_work_on(G_0, G_, Host_work,t_errors)
             is_work = True
         real_error = []
         if is_work:
-            #当前是工作时间，故障候选节点是所有主机
+            #Currently it's working hours, and the candidate nodes for faults are all hosts.
             host_candidata = {n for n in G_.nodes() if G_.nodes[n]['type'] == 'server'}
         else:
-            #当前是休息时间，故障候选节点是主机节点-关机节点
+            #Currently it's off-work time, and the candidate nodes for faults are host nodes - shut down nodes.
             host_candidata = {n for n in G_.nodes() if G_.nodes[n]['type'] == 'server'} - set(Host_work)
-        #主机的故障状态变化
         for h in host_candidata:
-            #如果生成的随机数小于0.001，表示这个主机出现故障
+            #If the generated random number is less than 0.001, it indicates a host failure.
             if random.random() < 0.001:
                 G_ = host_error_off(G_, [h])
                 real_error.append(h)
-        if len(real_error) != 0:#这个时刻产生了故障
-            t_errors.append([t,real_error])#记录故障时刻
+        if len(real_error) != 0:  # This moment has produced a fault
+            t_errors.append([t, real_error])  # Record fault moment
         for m in t_errors:
             if m[0] + 72 == t:
                 G_ = host_error_on(G_0, G_, m[1])
@@ -541,76 +529,11 @@ def Dy_tree(core_switch_num,core_aggregation, aggregation_switch_num,aggregation
         Dy_G.append(G_)
     return Dy_G
 
-# def commen_change(G, all_nodes, all_switches, all_servers):
-#     #代表数值类型的网络图中的常规变化
-#     change_node = random.sample(all_nodes, max(int(0.02*len(all_nodes)),1))
-#     for i in change_node:
-#         #增加防御属性
-#         if G.nodes[i]["detection"] < 10:
-#             G.nodes[i]["detection"] += 1
-#         if any(value < 10 for value in G.nodes[i]["defense"]):
-#             min_defense = min(G.nodes[i]["defense"])
-#             min_index = G.nodes[i]["defense"].index(min_defense)
-#             G.nodes[i]["defense"][min_index] += 1
-#     return G
 
-# def host_work_off(G, Host_work):
-#     #删除所有的Host_work节点
-#     for i in Host_work:
-#         if i in G.nodes():
-#             G.remove_node(i)
-#     return G
-# def host_error_off(G, Host_error):
-#     #删除所有的Host_error节点
-#     for i in Host_error:
-#         if i in G.nodes():
-#             G.remove_node(i)
-#     return G
-# def host_work_on(G_0,G, Host_work):
-#     #在节点G中添加所有的Host_work节点，并根据G_0,增加相应的边
-#     for i in Host_work:
-#         if i not in G.nodes():
-#             node_0_attrs = G_0.nodes[i]
-#             G.add_node(i, **node_0_attrs)
-#         for j in G_0.neighbors(i):
-#             if j in G.nodes():
-#                 G.add_edge(i,j)
-#     return G
-    
-# def host_error_on(G_0,G, Host_error):
-#     #在节点G中添加所有的Host_error节点，并根据G_0,增加相应的边
-#     for i in Host_error:
-#         if i not in G.nodes():
-#             node_0_attrs = G_0.nodes[i]
-#             G.add_node(i, **node_0_attrs)
-#         for j in G_0.neighbors(i):
-#             if j in G.nodes():
-#                 G.add_edge(i,j)
-#     return G
-
-
-# def set_node_attribute(G, defense_type):
-#     #增加节点属性值（数值类型），设置高防御低检测（1），低检测低防御（2），高检测高防御（3）
-#     if defense_type == 1:
-#         #前4个属性最小值为5，后一个属性最大值为3
-#         #属性值为一个列表
-#         for i in G.nodes():
-#             G.nodes[i]["defense"] =[random.randint(5, 10) for _ in range(4)]
-#             G.nodes[i]["detection"] = random.randint(0, 3)
-#     elif defense_type == 2:#低检测低防御
-#         for i in G.nodes():
-#             G.nodes[i]["defense"] = [random.randint(0, 5) for _ in range(4)]
-#             G.nodes[i]["detection"] = random.randint(0, 3)
-#     elif defense_type == 3:#高检测高防御
-#         for i in G.nodes():
-#             G.nodes[i]["defense"] = [random.randint(5, 10) for _ in range(4)]
-#             G.nodes[i]["detection"] = random.randint(5, 10)
-#     return G
             
 
-# 定义一个函数，用于将图G保存到文件fname中
+
 def save(G, fname):
-    # 将图G中的节点和边保存为字典，节点以列表形式保存，边以列表形式保存
     json.dump(dict(nodes=[[n, G.node[n]] for n in G.nodes()],
                    edges=[[u, v, G.edge[u][v]] for u,v in G.edges()]),
               open(fname, 'w'), indent=2)
@@ -624,7 +547,7 @@ def load(fname):
 
 
 if __name__ == '__main__':
-    #节点规模为10
+    #node number 10
     # core_switch_num =1
     # core_aggregation={0:2}
     # aggregation_switch_num = sum(core_aggregation.values())
@@ -632,7 +555,7 @@ if __name__ == '__main__':
     # edge_switch_num = sum(aggregation_edge.values())
     # host_num = 8
 
-    # #节点规模为100
+    # #node number 100
     # core_switch_num =1
     # core_aggregation={0:3}
     # aggregation_switch_num = sum(core_aggregation.values())
@@ -640,30 +563,29 @@ if __name__ == '__main__':
     # edge_switch_num = sum(aggregation_edge.values())
     # host_num = 90
 
-    #节点规模为1000
-    core_switch_num =1#核心交换机数量,树的根节点
-    core_aggregation={0:7}#每个核心交换机连接的汇聚交换机数量
-    aggregation_switch_num = sum(core_aggregation.values())#汇聚交换机数量
-    aggregation_edge={0:7,1:3,2:7,3:7,4:6,5:6,6:7}#每个汇聚交换机连接的接入交换机数量
-    ##接入交换机数量是aggregation_edge的所有键值的和
-    edge_switch_num = sum(aggregation_edge.values())#接入交换机数量
+    #node number 1000
+    core_switch_num =1#Number of core switches, root node of the tree.
+    core_aggregation={0:7}#Number of aggregation switches connected to each core switch.
+    aggregation_switch_num = sum(core_aggregation.values())#Number of aggregation switches.
+    aggregation_edge={0:7,1:3,2:7,3:7,4:6,5:6,6:7}#Number of access switches connected to each aggregation switch.
+    ##Number of access switches is the sum of all values in aggregation_edge.
+    edge_switch_num = sum(aggregation_edge.values())#Number of access switches.
     host_num = 950
 
 
 
-    pro = 0.65#存在多大的概率在同一个局域网内有同一个漏洞
+    pro = 0.65#Probability of having the same vulnerability in the same local area network.
     # np.random.seed(2077)
-    #设置生成数值模拟网络类型，defense_type = 1,2,3
+    #Setting the type of network for numerical simulation, defense_type = 1,2,3
     # defense_type = 1
     # defense_type = 2
     # defense_type = 3
-    #设置网络是静态的还是动态的，static = 0，1  0表示动态，1表示静态
+    #Setting whether the network is static or dynamic, static = 0,1  0 indicates dynamic, 1 indicates static
 
-    # 静态\动态网络的生成及保存
     # static = 0
     static = 1
     for c in range(1):
-        if static == 1:#静态网络
+        if static == 1:#Static network
             graph = tree(core_switch_num,core_aggregation, aggregation_switch_num,aggregation_edge,edge_switch_num,host_num,pro)
     # nx.draw(graph, with_labels=True, alpha=0.8, node_size=500)
     # plt.savefig("123.png")
@@ -672,7 +594,7 @@ if __name__ == '__main__':
             os.makedirs(os.path.dirname(z), exist_ok=True)
             with open(z, 'wb') as f:
                 pickle.dump(graph, f, pickle.HIGHEST_PROTOCOL)
-        else:#动态网络
+        else:#Dynamic network
             t_start = 0
             t_end = 1000
             Gy_graphs = Dy_tree(core_switch_num,core_aggregation, aggregation_switch_num,aggregation_edge,edge_switch_num,host_num,pro, T = t_end)

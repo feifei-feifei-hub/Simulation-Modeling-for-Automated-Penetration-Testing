@@ -49,7 +49,7 @@ You can use the following command to install these packages: `pip install -r req
 - **Install the required packages using pip:** `pip install -r requirements.txt`
 
 
-**Using conda(Alternative)
+**Using conda(Alternative)**
 
 - **Create a conda environment:** `conda create -n py312 python=3.12`
 

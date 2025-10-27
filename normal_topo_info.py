@@ -10,46 +10,16 @@ import sys,os
 
 sys.path.append(os.getcwd())
 from data_cve.CVE_detail import Read_data 
-# from graph_pre_train.GPT_GNN.data import * 
-# #G = nx.read_gpickle("test_100.gpickle")
-# class Topoinfo():
-#     def __init__(self,graph):
-#         self.graph = graph
 
-
-
-# if __name__ == "__main__":
-#     Graph_ =  Topoinfo(G)
-#     print(Graph_.nodes())
-
-# graph = nx.read_gpickle("test_10.gpickle")
-# print(graph.nodes(data = True))
-# # 获取所有key
-# all_features = set()
-# for i in graph.nodes(data = True):
-#     #print(i[1])
-#     for j in i[1].values():
-#         #print(j)
-#         if type(j) == list:
-#             for m in j:
-#                 all_features.add(m)
-#         else:
-#             all_features.add(j)
-# print(all_features)
-
-        
-#            #all_features.add(m)
-#            #  
-# print(all_features)
 
 def map_list():
     map_list = {}
     map_list["switch"] = 0
     map_list["server"] = 1
-    #[0,1]前两位是节点类型switch/server
+    #[0,1] The first two digits represent the node type: switch/server.
     for i in range(0,350):
         map_list[str(i)] = i+2
-    #[2:21]位代表的是节点属于哪一个lan_id
+    #[2:21] The next digits represent which lan_id the node belongs to.
     map_list["windows"] = len(map_list) + 1
     map_list["linux"] = len(map_list) + 1
     #"windows","linux"
@@ -63,7 +33,7 @@ def map_list():
             else:
                 for n in cve.all_cve[i]["affectedversion"]:
                     map_list[(m,n)] = len(map_list) + 1
-    #（software+版本)
+    #（software+version)
     for i in cve.all_cve:
         map_list[i] = len(map_list) + 1
     # cve
@@ -78,9 +48,9 @@ print(map_list_)
 # filename.close()
 import numpy as np
 
-np.save("map_list.npy",map_list_)           # 保存文件
+np.save("map_list.npy",map_list_)         
 
-#map_list_ = np.load("map_list.npy",allow_pickle = True).item()     # 加载文件
+#map_list_ = np.load("map_list.npy",allow_pickle = True).item()    
 
 
 

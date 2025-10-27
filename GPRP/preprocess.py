@@ -16,14 +16,15 @@ from GPRP.graph_pre_train.GPT_GNN.data import *
 
 map_list = np.load("map_list.npy",allow_pickle = True).item()     
 # 加载映射文件，映射文件不需要每一次都更新
+net_type = 'fat'#fat, mix, self
 for c in range(17):
     #从保存的图中读取网络结构
     if c < 10:
-        z = (f"./GPRP/datadrive/dataset/pre_data/pre1000_{c}.gpickle")
+        z = (f"./GPRP/datadrive/{net_type}_dataset/pre_data/pre1000_{c}.gpickle")
     elif c >= 10 and c < 15:
-        z = (f"./GPRP/datadrive/dataset/pre_data/train1000_{c}.gpickle")
+        z = (f"./GPRP/datadrive/{net_type}_dataset/pre_data/train1000_{c}.gpickle")
     elif c == 15:
-        z = (f"./GPRP/datadrive/dataset/pre_data/test1000_{c}.gpickle")
+        z = (f"./GPRP/datadrive/{net_type}_dataset/pre_data/test1000_{c}.gpickle")
     #f = (f"./datadrive/dataset/pre_data/pre1000_{c}.gpickle")
     with open(z, 'rb') as f:
         G = pickle.load(f)
@@ -125,29 +126,29 @@ for c in range(17):
     graph_net.y = y_lable
     if c < 10:
 
-        dill.dump(graph_net, open(f'GPRP/datadrive/dataset/pre_graph_{c}.pk', 'wb'))
+        dill.dump(graph_net, open(f'GPRP/datadrive/{net_type}_dataset/pre_graph_{c}.pk', 'wb'))
         #np.save("eval/data/edge_list_",graph_net.edge_list['def']['def']['def'])
-        with open(f"eval/data/pre_edge_list_{c}.json","w", encoding='utf-8') as f: ## 设置'utf-8'编码
+        with open(f"eval/{net_type}_data/pre_edge_list_{c}.json","w", encoding='utf-8') as f: ## 设置'utf-8'编码
             f.write(json.dumps(el,ensure_ascii=False))
-        np.save(f"eval/data/pre_X_{c}",x)
-        np.save(f"eval/data/pre_Y_{c}",(graph_net.y.numpy()))
+        np.save(f"eval/{net_type}_data/pre_X_{c}",x)
+        np.save(f"eval/{net_type}_data/pre_Y_{c}",(graph_net.y.numpy()))
     elif c >= 10 and c < 15:
-        dill.dump(graph_net, open(f'GPRP/datadrive/dataset/train_graph_{c}.pk', 'wb'))
+        dill.dump(graph_net, open(f'GPRP/datadrive/{net_type}_dataset/train_graph_{c}.pk', 'wb'))
         #np.save("eval/data/edge_list_",graph_net.edge_list['def']['def']['def'])
-        with open(f"eval/data/train_edge_list_{c}.json","w", encoding='utf-8') as f: ## 设置'utf-8'编码
+        with open(f"eval/{net_type}_data/train_edge_list_{c}.json","w", encoding='utf-8') as f: ## 设置'utf-8'编码
             f.write(json.dumps(el,ensure_ascii=False))
-        np.save(f"eval/data/train_nodes_{c}",graph_net.train_target_nodes)
-        np.save(f"eval/data/valid_nodes_{c}",graph_net.valid_target_nodes)
-        np.save(f"eval/data/train_X_{c}",x)
-        np.save(f"eval/data/train_Y_{c}",(graph_net.y.numpy()))
+        np.save(f"eval/{net_type}_data/train_nodes_{c}",graph_net.train_target_nodes)
+        np.save(f"eval/{net_type}_data/valid_nodes_{c}",graph_net.valid_target_nodes)
+        np.save(f"eval/{net_type}_data/train_X_{c}",x)
+        np.save(f"eval/{net_type}_data/train_Y_{c}",(graph_net.y.numpy()))
     elif c == 15:
-        dill.dump(graph_net, open(f'GPRP/datadrive/dataset/test_graph_{c}.pk', 'wb'))
+        dill.dump(graph_net, open(f'GPRP/datadrive/{net_type}_dataset/test_graph_{c}.pk', 'wb'))
         #np.save("eval/data/edge_list_",graph_net.edge_list['def']['def']['def'])
-        with open(f"eval/data/test_edge_list_{c}.json","w", encoding='utf-8') as f: ## 设置'utf-8'编码
+        with open(f"eval/{net_type}_data/test_edge_list_{c}.json","w", encoding='utf-8') as f: ## 设置'utf-8'编码
             f.write(json.dumps(el,ensure_ascii=False))
-        np.save(f"eval/data/test_nodes_{c}",graph_net.test_target_nodes)
-        np.save(f"eval/data/test_X_{c}",x)
-        np.save(f"eval/data/test_Y_{c}",(graph_net.y.numpy()))
+        np.save(f"eval/{net_type}_data/test_nodes_{c}",graph_net.test_target_nodes)
+        np.save(f"eval/{net_type}_data/test_X_{c}",x)
+        np.save(f"eval/{net_type}_data/test_Y_{c}",(graph_net.y.numpy()))
 
 
     # dill.dump(graph_net, open('datadrive/dataset/graph_net1000.pk', 'wb'))

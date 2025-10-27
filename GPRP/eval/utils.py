@@ -56,6 +56,8 @@ def configure():
 
 def configure_link():
     parser = argparse.ArgumentParser(description='Fine-Tuning on node classification task')
+    parser.add_argument('--net_type', type=str, default='fat',
+                    help='Type of network architecture') 
     # Dataset arguments
     parser.add_argument('--premodel', type=str, default='1208selfpre+hgt+128+200+0.001+25+4+1+32+10+8.pk', help='premodel name')
     model_name_ = parser.parse_args()

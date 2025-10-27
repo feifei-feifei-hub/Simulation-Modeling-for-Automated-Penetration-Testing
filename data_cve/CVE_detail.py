@@ -12,16 +12,16 @@ import ast
 
 class Del_data:
     #读取表格中的数据，并删除重复的条目,将筛选后的数据保存为新的xlsx文件
-    def __init__(self, path = './data_cve/all_20240825.xlsx'):
+    def __init__(self, path = './data_cve/eng_all_20240825.xlsx'):
         self.path = path
         # self.all_cve,self.all_payload = self.data()
         # self.cve_server, self.cve_switch, self.cve_os, self.cve_database = self.classification()
 
-    def data(self,outpath = './data_cve/new_all_20240825.xlsx'):
+    def data(self,outpath = './data_cve/eng_new_all_20240825.xlsx'):
         #读取表格中的数据
         data = pd.read_excel(self.path,sheet_name='cve')
         #根据第一列的数据进行去重
-        data = data.drop_duplicates(subset='漏洞号:cve',keep = 'first')
+        data = data.drop_duplicates(subset='cve_id:cve',keep = 'first')
         #将数据保存为新的xlsx文件
         data.to_excel(outpath,index = False)
 
@@ -137,7 +137,7 @@ class EPSS_data:
 
 
 class Read_data:
-    def __init__(self, path = './data_cve/final0216_cve_type.xlsx'):
+    def __init__(self, path = './data_cve/eng_final0216_cve_type.xlsx'):
         self.path = path
         # all_cve,all_type,all_type_list = self.data()
     
@@ -151,13 +151,13 @@ class Read_data:
         #逐行读取数据,并将数据保存为字典
         for i in range(len(data)):
             cve = data.iloc[i]
-            cve_name = cve["漏洞号:cve"]
+            cve_name = cve["cve_id:cve"]
             all_cve[cve_name] = {}
-            all_cve[cve_name]["type"] = cve["渗透目标分类:targetcategory"]
-            all_cve[cve_name]["执行类型"] = cve["other"]
+            all_cve[cve_name]["type"] = cve["targetcategory"]
+            all_cve[cve_name]["execution_type"] = cve["other"]
             if all_cve[cve_name]["type"] not in all_type:
                 all_type_list[all_cve[cve_name]["type"]] = set()
-            all_type.add(cve["渗透目标分类:targetcategory"])
+            all_type.add(cve["targetcategory"])
             all_type_list[all_cve[cve_name]["type"]].add(cve_name)
             all_cve[cve_name]["cve_name_detail"] = NVD_data().get_cve_info(cve_name)
             all_cve[cve_name]["description"] = all_cve[cve_name]["cve_name_detail"]["description"]
@@ -236,9 +236,9 @@ class Read_data:
                 all_cve_type[key] = list(all_cve_type[key])
             with open('/root/feifei/8_network_generator/data_cve/all_cve_type.json', 'w',encoding='utf-8') as f:
                 json.dump(all_cve_type, f, ensure_ascii=False, indent=4)
-            print(f"字典已成功保存为 JSON 文件: {file_path}")
+            print(f"Dictionary successfully saved to JSON file: {file_path}")
         except Exception as e:
-            print(f"保存 JSON 文件时发生错误: {e}")
+            print(f"Error saving JSON file: {e}")
 
 
     def read_all_type_list(self,file_path = '/root/feifei/8_network_generator/data_cve/all_cve_type.json'):
@@ -251,53 +251,53 @@ class Read_data:
             with open(file_path, 'r', encoding='utf-8') as file:
                 data = json.load(file)  # 将 JSON 文件内容加载为字典
                 for key in data.keys():
-                    if key == "/操作系统/Windows":
+                    if key == "/os/Windows":
                         eng_all_type_list["os_windows"] = data[key]
-                    elif key == "/操作系统/Linux":
+                    elif key == "/os/Linux":
                         eng_all_type_list["os_linux"] = data[key]
-                    elif key == "/操作系统/Unix":
+                    elif key == "/os/Unix":
                         eng_all_type_list["os_unix"] = data[key]
-                    elif key == "/操作系统/Mac":
+                    elif key == "/os/Mac":
                         eng_all_type_list["os_mac"] = data[key]
-                    elif key == "/操作系统/iOS":
+                    elif key == "/os/iOS":
                         eng_all_type_list["os_ios"] = data[key]
                     elif key == "/Web":
                         eng_all_type_list["web"] = data[key]
-                    elif key == "/防火墙" or key == "/防御设备" or key == "/邮件防火墙":
+                    elif key == "/firewall" or key == "/defense" or key == "/email_firewall":
                         for m in data[key]:
                             eng_all_type_list["firewall"].append(m)
-                    elif key == "/路由器" or key == "/交换机":
+                    elif key == "/router" or key == "/switch":
                         for m in data[key]:
                             eng_all_type_list["switch"].append(m)
-                    elif key == "/数据库":
+                    elif key == "/database":
                         eng_all_type_list["database"] = data[key]
-                    elif key == "/服务器":
+                    elif key == "/server":
                         eng_all_type_list["server"] = data[key]
-                    elif key == "/防御组件" or key == "/应用软件" or key == "/应用软件管理系统" or key == "/组件/Java" or key == "/组件/Php":
+                    elif key == "/defense_component" or key == "/soft" or key == "/AMS" or key == "/component/Java" or key == "/component/Php":
                         for m in data[key]:
                             eng_all_type_list["soft"].append(m)
-                    elif key == "/应用软件/Linux":
+                    elif key == "/soft/Linux":
                         eng_all_type_list["soft_os_linux"] = data[key]
-                    elif key == "/应用软件/Windows":
+                    elif key == "/soft/Windows":
                         eng_all_type_list["soft_os_windows"] = data[key]
-                    elif key == "/应用软件/Unix":
+                    elif key == "/soft/Unix":
                         eng_all_type_list["soft_os_unix"] = data[key]
-                    elif key == "/应用软件/Mac":
+                    elif key == "/soft/Mac":
                         eng_all_type_list["soft_os_mac"] = data[key]
-                    elif key == "/域漏洞":
+                    elif key == "/domain":
                         eng_all_type_list["domain"] = data[key]
-                    elif key == "/远程访问" or key == "/中间件":
+                    elif key == "/remote" or key == "/middleware":
                         for m in data[key]:
                             eng_all_type_list["remote"].append(m)
                 with open('/root/feifei/8_network_generator/data_cve/eng_all_type_list.json', 'w', encoding='utf-8') as f:
                     json.dump(eng_all_type_list, f, ensure_ascii=False, indent=4)
                 return eng_all_type_list
         except FileNotFoundError:
-            print(f"文件未找到: {file_path}")
+            print(f"File not found: {file_path}")
         except json.JSONDecodeError:
-            print(f"文件不是有效的 JSON 格式: {file_path}")
+            print(f"File is not a valid JSON format: {file_path}")
         except Exception as e:
-            print(f"读取文件时发生错误: {e}")
+            print(f"Error reading file: {e}")
         
             
 

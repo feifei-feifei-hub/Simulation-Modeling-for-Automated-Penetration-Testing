@@ -4,7 +4,7 @@ import numpy as np
 import re
 import openpyxl  # 使用pd.read_excel中需要保证openpyxl库已安装，但可以不导入。 				#读Excel数据用
 class Read_data:
-    def __init__(self, path = './data_cve/fei_cve_20230728.xlsx'):
+    def __init__(self, path = './GPRP/data_cve/fei_cve_20230728.xlsx'):
         self.path = path
         self.all_cve,self.all_payload = self.data()
         self.cve_server, self.cve_switch, self.cve_os, self.cve_database = self.classification()
@@ -84,13 +84,13 @@ class Read_data:
         
         for i in self.all_cve:
             # print(self.all_cve[i]['targetcategory'])
-            if "中间件" in self.all_cve[i]['targetcategory']:
+            if "middleware" in self.all_cve[i]['targetcategory']:
                 cve_switch[i] = self.all_cve[i]
-            if "操作系统" in self.all_cve[i]['targetcategory']:
+            if "os" in self.all_cve[i]['targetcategory']:
                 cve_os[i] = self.all_cve[i]
-            if "数据库" in self.all_cve[i]['targetcategory'] or "大数据" in self.all_cve[i]['targetcategory']:
+            if "database" in self.all_cve[i]['targetcategory'] or "bigdata" in self.all_cve[i]['targetcategory']:
                 cve_database[i] = self.all_cve[i]
-            if "应用" in self.all_cve[i]['targetcategory'] or "Web" in self.all_cve[i]['targetcategory'] or "协议" in self.all_cve[i]['targetcategory'] or "框架" in self.all_cve[i]['targetcategory']:
+            if "soft" in self.all_cve[i]['targetcategory'] or "Web" in self.all_cve[i]['targetcategory'] or "protocol" in self.all_cve[i]['targetcategory'] or "framework" in self.all_cve[i]['targetcategory']:
                 cve_server[i] = self.all_cve[i]
         
         return cve_server,cve_switch,cve_os,cve_database
