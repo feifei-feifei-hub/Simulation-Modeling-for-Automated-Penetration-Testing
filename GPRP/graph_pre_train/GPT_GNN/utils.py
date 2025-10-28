@@ -31,7 +31,7 @@ def mean_reciprocal_rank(rs):
 
 
 def normalize(mx):
-    """Row-normalize sparse matrix行归一化稀疏矩阵"""
+    """Row-normalize sparse matrix"""
     rowsum = np.array(mx.sum(1))
     r_inv = np.power(rowsum, -1).flatten()
     r_inv[np.isinf(r_inv)] = 0.
@@ -60,8 +60,8 @@ def feature_OAG(layer_data, graph):
     for _type in layer_data:
         if len(layer_data[_type]) == 0:
             continue
-        idxs  = np.array(list(layer_data[_type].keys()))#索引
-        tims  = np.array(list(layer_data[_type].values()))[:,1]#时间
+        idxs  = np.array(list(layer_data[_type].keys()))
+        tims  = np.array(list(layer_data[_type].values()))[:,1]
         
         if 'node_emb' in graph.node_feature[_type]:
             feature[_type] = np.array(list(graph.node_feature[_type].loc[idxs, 'node_emb']), dtype=np.float)

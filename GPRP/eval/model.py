@@ -30,7 +30,7 @@ class Linkprediction(nn.Module):
         self.linear    = nn.Linear(n_hid,  n_out)
         self.sqrt_hd     = math.sqrt(n_out)
         self.drop        = nn.Dropout(0.2)
-        self.cosine      = nn.CosineSimilarity(dim=1)#torch.nn.CosineSimilarity函数计算两个高维特征图(B,C,H,W)中各个像素位置的特征相似度,余弦相似度距离
+        self.cosine      = nn.CosineSimilarity(dim=1)
         self.cache       = None
         self.temperature = temperature
     def forward(self, x, ty):

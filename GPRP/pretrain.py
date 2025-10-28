@@ -68,7 +68,7 @@ parser.add_argument('--n_epoch', type=int, default=40,
 parser.add_argument('--n_pool', type=int, default=8,
                     help='Number of process to sample subgraph')    
 parser.add_argument('--n_batch', type=int, default=5,
-                    help='Number of batch (sampled graphs) for each epoch') #每一个epoch采样的sampled graphs的数量
+                    help='Number of batch (sampled graphs) for each epoch') 
 parser.add_argument('--batch_size', type=int, default=128,
                     help='Number of output nodes for training')    
 parser.add_argument('--clip', type=float, default=0.5,
@@ -91,18 +91,18 @@ graphs = []
 pre_target_nodes = []
 train_target_nodes = []
 for c in range(11):
-    if c < 10:#预训练图
+    if c < 10:
         graph_reddit_: Graph = dill.load(open(f'GPRP/datadrive/{args.net_type}_dataset/pre_graph_{c}.pk', 'rb'))
         pre_target_node = graph_reddit_.pre_target_nodes
-        pre_target_node = np.concatenate([pre_target_node, np.ones(len(pre_target_node))]).reshape(2, -1).transpose()#-1表示列数自动计算，transpose()函数的作用就是调换数组的行列值的索引值
+        pre_target_node = np.concatenate([pre_target_node, np.ones(len(pre_target_node))]).reshape(2, -1).transpose()
         pre_target_nodes.append(pre_target_node)
         graphs.append(graph_reddit_)
 
-    elif c >= 10 and c <11:#训练图
+    elif c >= 10 and c <11:
         graph_reddit_: Graph = dill.load(open(f'GPRP/datadrive/{args.net_type}_dataset/train_graph_{c}.pk', 'rb'))
         train_target_node = graph_reddit_.train_target_nodes
         train_target_node = np.concatenate([train_target_node, np.ones(len(train_target_node))]).reshape(2, -1).transpose()
-#转换过来就是array([[id,1],[id,1]])
+
         train_target_nodes.append(train_target_node)
         graphs.append(graph_reddit_)
     
@@ -115,7 +115,7 @@ rel_stop_list = ['self']
 def GPT_sample(seed, target_nodes, time_range, batch_size, num_graph, feature_extractor):
     np.random.seed(seed)
     graph_reddit = graphs[num_graph]
-    samp_target_nodes = target_nodes[np.random.choice(len(target_nodes), batch_size)]#target_nodes在前几个进程就是pre_target_nodes训练数据集，最后一个就是测试数据集
+    samp_target_nodes = target_nodes[np.random.choice(len(target_nodes), batch_size)]
     threshold   = 0.5
     feature, times, edge_list, _, attr = sample_subgraph(graph_reddit, time_range, \
                 inp = {target_type: samp_target_nodes}, feature_extractor = feature_extractor, \
@@ -190,20 +190,19 @@ def prepare_data(pool):
     for i in np.arange(1):
         num_graph = i+10
         jobs.append(pool.apply_async(GPT_sample, args=(randint(), train_target_nodes[i], {1: True}, args.batch_size,num_graph, feature_reddit)))
-    return jobs#最后几个jobs和其他jobs的区别就是，最后几个用test数据
+    return jobs
 
 
 pool = mp.Pool(args.n_pool)
 st = time.time()
 jobs = prepare_data(pool)
-repeat_num = int(len(pre_target_nodes[0]) / args.batch_size // 1)#因为每一张图都只采样一个子图进行训练，所有这里是1，然后一张图一次训练完要重复int(len(pre_target_nodes[0]) / args.batch_size // 1)次
-#这里先运行一下是什么意思？#一张图一次采样args.batch_size*1个节点，要采样repeat_num才能采样完
+repeat_num = int(len(pre_target_nodes[0]) / args.batch_size // 1)
 
 data, rem_edge_list, ori_edge_list, _, _ = GPT_sample(randint(), pre_target_nodes[0], {1: True}, args.batch_size, 0, feature_reddit)
 node_feature, node_type, edge_time, edge_index, edge_type, node_dict, edge_dict = data
 types = graphs[0].get_types()
 
-#graph_reddit是最后一个graph
+
 gnn = GNN(conv_name = args.conv_name, in_dim = len(graphs[0].node_feature[target_type]['emb'].values[0]), n_hid = args.n_hid, \
           n_heads = args.n_heads, n_layers = args.n_layers, dropout = args.dropout, num_types = len(types), \
           num_relations = len(graphs[0].get_meta_graph()) + 1, prev_norm = args.prev_norm, last_norm = args.last_norm, use_RTE = False)
@@ -229,7 +228,7 @@ train_step = 0
 stats = []
 optimizer = torch.optim.AdamW(gpt_gnn.parameters(), weight_decay = 1e-2, eps=1e-06, lr = args.max_lr)
 
-if args.scheduler == 'cycle':#total_steps = 一张图的重复采样次数×n_batch数目*n_epoch数目，抛开n_epoch，那就是repeat_num * args.n_batch = 被采样的节点总数目/batch_size
+if args.scheduler == 'cycle':
     scheduler = torch.optim.lr_scheduler.OneCycleLR(optimizer, pct_start=0.02, anneal_strategy='linear', final_div_factor=100,\
                         max_lr = args.max_lr, total_steps = repeat_num*10*args.n_epoch)
 elif args.scheduler == 'cosine':
@@ -240,7 +239,7 @@ count__= 0
 for epoch in np.arange(args.n_epoch) + 1:
     torch.cuda.empty_cache()
     print("count__",count__)
-    gpt_gnn.neg_queue_size = args.queue_size * epoch // args.n_epoch#论文里面提到的负采样队列
+    gpt_gnn.neg_queue_size = args.queue_size * epoch // args.n_epoch
     for batch in np.arange(repeat_num) + 1:
         print("count__batch",count__)
         train_data = [job.get() for job in jobs[:10]]
@@ -267,7 +266,7 @@ for epoch in np.arange(args.n_epoch) + 1:
                 loss_attr = gpt_gnn.text_loss(node_emb[start_idx : end_idx], attr, w2v_model, device)
             else:
                 loss_attr = gpt_gnn.feat_loss(node_emb[start_idx : end_idx], torch.FloatTensor(attr).to(device))
-                #Matcher(gnn.n_hid, gnn.in_dim)，计算特征之间的距离
+                #Matcher(gnn.n_hid, gnn.in_dim)
 
 
             loss = loss_link * (1 - args.attr_ratio) + loss_attr * args.attr_ratio
@@ -317,7 +316,7 @@ for epoch in np.arange(args.n_epoch) + 1:
         print(("Epoch: %d, (%d / %d) %.1fs  LR: %.5f Train Loss: (%.3f, %.3f)  Valid Loss: %.3f   Norm: %.3f  queue: %d") % \
             (epoch, batch, repeat_num, (st-et), optimizer.param_groups[0]['lr'], np.average(train_link_losses), np.average(train_attr_losses), \
             np.average(valid_losses), node_emb.norm(dim=1).mean(), gpt_gnn.neg_queue_size))  
-       #问题 train_attr_losses是一个负值， valid_losses也是一个负值
+       
         if np.average(valid_losses) < best_val:
             best_val = np.average(valid_losses)
             print('UPDATE!!!')

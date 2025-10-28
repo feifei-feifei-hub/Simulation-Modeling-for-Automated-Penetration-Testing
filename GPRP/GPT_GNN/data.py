@@ -92,8 +92,8 @@ def sample_subgraph(graph, time_range, sampled_depth = 2, sampled_number = 8, in
         Currently sampled nodes are stored in layer_data.
         After nodes are sampled, we construct the sampled adjacancy matrix.
     '''
-    layer_data  = defaultdict( #target_type，同质图默认为"def',
-                        lambda: {} # {target_id: [ser, time]}#ser在这里是这个节点出现时layer_data的长度-1（也就是从0开始），time都初始化为1
+    layer_data  = defaultdict( #target_type，
+                        lambda: {} # {target_id: [ser, time]}
                     )
     budget     = defaultdict( #source_type
                                     lambda: defaultdict(  #source_id
@@ -128,8 +128,8 @@ def sample_subgraph(graph, time_range, sampled_depth = 2, sampled_number = 8, in
                     if source_time > np.max(list(time_range.keys())) or source_id in layer_data[source_type]:
                         continue
                     budget[source_type][source_id][0] += 1. / len(sampled_ids)
-                    budget[source_type][source_id][1] = source_time#根据出现的次数给每一个值添加权重，倾向于选择没有出现的
-#budget原本是空的，这里就是在修改权重更新budget
+                    budget[source_type][source_id][1] = source_time
+
     '''
         First adding the sampled nodes then updating budget.
     '''
@@ -139,7 +139,7 @@ def sample_subgraph(graph, time_range, sampled_depth = 2, sampled_number = 8, in
     for _type in inp:
         te = graph.edge_list[_type]
         for _id, _time in inp[_type]:
-            add_budget(te, _id, _time, layer_data, budget)#budget = {222896: [0.0078125, 1]，……}ID：[权重，出现的时间（同构图全部为1）]
+            add_budget(te, _id, _time, layer_data, budget)#budget = {222896: [0.0078125, 1]，……}ID：[]
     '''
         We recursively expand the sampled graph by sampled_depth.
         Each time we sample a fixed number of nodes for each budget,
@@ -149,7 +149,7 @@ def sample_subgraph(graph, time_range, sampled_depth = 2, sampled_number = 8, in
         sts = list(budget.keys())
         for source_type in sts:
             te = graph.edge_list[source_type]
-            keys  = np.array(list(budget[source_type].keys()))#被采样的点的ID
+            keys  = np.array(list(budget[source_type].keys()))
             if sampled_number > len(keys):
                 '''
                     Directly sample all the nodes
@@ -160,9 +160,9 @@ def sample_subgraph(graph, time_range, sampled_depth = 2, sampled_number = 8, in
                     Sample based on accumulated degree
                 '''
                 score = np.array(list(budget[source_type].values()))[:,0] ** 2
-                score = score / np.sum(score)#归一化
+                score = score / np.sum(score)
                 sampled_ids = np.random.choice(len(score), sampled_number, p = score, replace = False) 
-            sampled_keys = keys[sampled_ids]#采样了
+            sampled_keys = keys[sampled_ids]
             '''
                 First adding the sampled nodes then updating budget.
             '''

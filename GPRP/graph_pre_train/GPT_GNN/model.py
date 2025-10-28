@@ -24,13 +24,12 @@ class GPT_GNN(nn.Module):
                 self.link_dec_dict[source_type][relation_type] = matcher
                 self.params.append(matcher)
         self.attr_decoder = attr_decoder
-        self.init_emb = nn.Parameter(torch.randn(gnn.in_dim))#torch.randn返回一个符合均值为0，方差为1的正态分布
-        #torch.nn.Parameter()将一个不可训练的tensor转换成可以训练的类型parameter，并将这个parameter绑定到这个module里面。
+        self.init_emb = nn.Parameter(torch.randn(gnn.in_dim))#
         self.ce = nn.CrossEntropyLoss(reduction = 'none')
         self.neg_samp_num = neg_samp_num
         
-    def neg_sample(self, souce_node_list, pos_node_list):#随机采样节点
-        np.random.shuffle(souce_node_list)#打乱顺序函数
+    def neg_sample(self, souce_node_list, pos_node_list):
+        np.random.shuffle(souce_node_list)
         neg_nodes = []
         keys = {key : True for key in pos_node_list}
         tot       = 0
@@ -61,7 +60,7 @@ class GPT_GNN(nn.Module):
 
                 target_ids, positive_source_ids = rem_edges[:,0].reshape(-1, 1), rem_edges[:,1].reshape(-1, 1)
                 n_nodes = len(target_ids)
-                source_node_ids = np.unique(ori_edges[:, 1])#np.unique() 函数 去除其中重复的元素 ，并按元素 由小到大 返回一个新的无元素重复的元组或者列表。
+                source_node_ids = np.unique(ori_edges[:, 1])
 
                 negative_source_ids = [self.neg_sample(source_node_ids, \
                     ori_edges[ori_edges[:, 0] == t_id][:, 1].tolist()) for t_id in target_ids]
@@ -88,18 +87,18 @@ class GPT_GNN(nn.Module):
                 res = matcher.forward(target_emb, source_emb)
                 res = res.reshape(n_nodes, rep_size)
                 ress += [res.detach()]
-                losses += F.log_softmax(res, dim=-1)[:,0].mean()#F.log_softmax 在softmax的结果上再做多一次log运算
+                losses += F.log_softmax(res, dim=-1)[:,0].mean()
                 if update_queue and 'L1' not in relation_type and 'L2' not in relation_type:
                     tmp = self.neg_queue[source_type][relation_type]
                     self.neg_queue[source_type][relation_type] = \
-                        torch.cat([node_emb[source_node_ids].detach(), tmp], dim=0)[:int(self.neg_queue_size * n_nodes)]# cat()在给定维度上对输入的张量序列seq 进行连接操作。
+                        torch.cat([node_emb[source_node_ids].detach(), tmp], dim=0)[:int(self.neg_queue_size * n_nodes)]
         return -losses / len(ress), ress
 
     
     def text_loss(self, reps, texts, w2v_model, device):
-        def parse_text(texts, w2v_model, device):#  gensim.models.Word2Vec 内置库
+        def parse_text(texts, w2v_model, device):
             idxs = []
-            pad  = w2v_model.wv.key_to_index['eos']#key_to_index将函数变量转换成字典
+            pad  = w2v_model.wv.key_to_index['eos']
             for text in texts:
                 idx = []
                 for word in ['bos'] + preprocess_string(text) + ['eos']:
@@ -116,7 +115,6 @@ class GPT_GNN(nn.Module):
                 masks    += [[1 for _ in range(len(idx))] + [0 for _ in range(mxl - len(idx) - 1)]]
             return torch.LongTensor(inp_idxs).transpose(0, 1).to(device), \
                    torch.LongTensor(out_idxs).transpose(0, 1).to(device), torch.BoolTensor(masks).transpose(0, 1).to(device)
-        #transpose选择tensor中两个维度进行转置
         inp_idxs, out_idxs, masks = parse_text(texts, w2v_model, device)
         pred_prob = self.attr_decoder(inp_idxs, reps.repeat(inp_idxs.shape[0], 1, 1))      
         return self.ce(pred_prob[masks], out_idxs[masks]).mean()
@@ -141,8 +139,8 @@ class Classifier(nn.Module):
     
 class Matcher(nn.Module):
     '''
-        Matching between a pair of nodes to conduct link prediction.#链路预测
-        Use multi-head attention as matching model.多头注意力机制
+        Matching between a pair of nodes to conduct link prediction.
+        Use multi-head attention as matching model.
     '''
     
     def __init__(self, n_hid, n_out, temperature = 0.1):
@@ -151,7 +149,7 @@ class Matcher(nn.Module):
         self.linear    = nn.Linear(n_hid,  n_out)
         self.sqrt_hd     = math.sqrt(n_out)
         self.drop        = nn.Dropout(0.2)
-        self.cosine      = nn.CosineSimilarity(dim=1)#torch.nn.CosineSimilarity函数计算两个高维特征图(B,C,H,W)中各个像素位置的特征相似度,余弦相似度距离
+        self.cosine      = nn.CosineSimilarity(dim=1)
         self.cache       = None
         self.temperature = temperature
     def forward(self, x, ty, use_norm = True):
@@ -181,16 +179,15 @@ class GNN(nn.Module):
         self.gcs.append(GeneralConv(conv_name, n_hid, n_hid, num_types, num_relations, n_heads, dropout, use_norm = last_norm, use_RTE = use_RTE))
 
     def forward(self, node_feature, node_type, edge_time, edge_index, edge_type):
-        res = torch.zeros(node_feature.size(0), self.n_hid).to(node_feature.device)#torch.device包含一个设备类型（‘cpu’或‘cuda’）和可选的设备序号。
+        res = torch.zeros(node_feature.size(0), self.n_hid).to(node_feature.device)
         for t_id in range(self.num_types):
-            idx = (node_type == int(t_id))#所有类型是t_type的节点值为true
+            idx = (node_type == int(t_id))
             if idx.sum() == 0:
                 continue
-            res[idx] = torch.tanh(self.adapt_ws[t_id](node_feature[idx]))#torch.tanh()为PyTorch中的双曲正切函数，将强负输入映射为负值，一定程度上环节梯度消失的问题
-            #self.adapt_ws是线性网络
+            res[idx] = torch.tanh(self.adapt_ws[t_id](node_feature[idx]))
         meta_xs = self.drop(res)
         del res
-        for gc in self.gcs:#self.gcs使用的GeneralConv
+        for gc in self.gcs:
             meta_xs = gc(meta_xs, node_type, edge_index, edge_type, edge_time)
         return meta_xs   
 

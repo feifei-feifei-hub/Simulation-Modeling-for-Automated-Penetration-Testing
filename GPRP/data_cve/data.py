@@ -2,7 +2,7 @@
 import pandas as pd
 import numpy as np
 import re
-import openpyxl  # 使用pd.read_excel中需要保证openpyxl库已安装，但可以不导入。 				#读Excel数据用
+import openpyxl  
 class Read_data:
     def __init__(self, path = './GPRP/data_cve/fei_cve_20230728.xlsx'):
         self.path = path
@@ -12,16 +12,11 @@ class Read_data:
     def data(self):
         
         data = pd.read_excel(self.path,sheet_name='cve')
-        #	data是Excel里的数据
-        # print(len(data))
-        # print(data.iloc[2,2])
-        # h = data.iloc[2,2].split(",")
-        # print(type(h))
-            
+        
         data_array = np.array(data)
         data_list =data_array.tolist()
-        print(type(data_list))
-        print(data_list)
+        # print(type(data_list))
+        # print(data_list)
         all_cve = {}
         for i in range(len(data)):
             all_cve[data.iloc[i,1]] = {}
@@ -33,7 +28,6 @@ class Read_data:
             all_cve[data.iloc[i,1]]["availableexp"] = data.iloc[i,11].split(",")
             all_cve[data.iloc[i,1]]["availablePayload"] = str(data.iloc[i,12]).split(",")
             all_cve[data.iloc[i,1]]["hazardrank"] = data.iloc[i,14]
-            #以下是对受影响版本的生成
             num = data.iloc[i,4]
             num5 = re.sub(u"([^\u0030-\u0039\u002e])", " ", str(num))
             i1 = re.split('\s+',num5)
@@ -43,8 +37,7 @@ class Read_data:
                 if '.' in list(j):
                     ls1_.append(j)
             all_cve[data.iloc[i,1]]["affectedversion"] = ls1_
-        # print(all_cve['CVE-2017-12635']["targetcategory"])
-        # print(all_cve)
+        
 
         data_payload = pd.read_excel(self.path,sheet_name='payload')
         all_payload = {}
@@ -76,11 +69,10 @@ class Read_data:
         return all_cve, all_payload
     
     def classification(self):
-        #对漏洞进行一定的分类
-        cve_server = {}#针对节点中的软件可能有的漏洞，“应用”、“web”、“协议
-        cve_switch = {}#针对交换机可能有的漏洞。“中间件”
-        cve_os = {}#针对操作系统可能有的漏洞，“操作系统”
-        cve_database = {}#针对数据库可能有的漏洞，“大数据”
+        cve_server = {}
+        cve_switch = {}
+        cve_os = {}
+        cve_database = {}
         
         for i in self.all_cve:
             # print(self.all_cve[i]['targetcategory'])

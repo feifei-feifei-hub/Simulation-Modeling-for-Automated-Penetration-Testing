@@ -29,9 +29,9 @@ class Trainer:
             self.gnn.load_state_dict(out_dict, strict=False)
         #self.classifier = Classifier(self.n_hid, self.graph.y.size(-1))
         self.linkpre = Linkprediction(self.n_hid,self.n_hid,)
-        #self.model = nn.Sequential(self.gnn, self.classifier).to(self.device)#把两个模型序贯组合成一个模型
-        self.model = nn.Sequential(self.gnn, self.linkpre).to(self.device)#把两个模型序贯组合成一个模型
-        self.criterion = nn.BCEWithLogitsLoss()#链路预测里面没有用到
+        #self.model = nn.Sequential(self.gnn, self.classifier).to(self.device)
+        self.model = nn.Sequential(self.gnn, self.linkpre).to(self.device)
+        self.criterion = nn.BCEWithLogitsLoss()
         self.optimizer = torch.optim.AdamW(self.model.parameters(), lr=5e-4)
         self.scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(self.optimizer, 500, eta_min=1e-6)
     
@@ -47,7 +47,7 @@ class Trainer:
                 valid_datas.append(valid_data)
                 train_datas.append(train_data)
                 valid_pairs = {}
-                for i in valid_data[-1]:#这里应该设置一个节点属性，定义为被发现还是没有被发现，被发现的才能作为训练集
+                for i in valid_data[-1]:
                     valid_pairs[i] = self.graph.edge_list[c][i]
                 valid_pairs_all.append(valid_pairs)
             train_losses = []
@@ -60,7 +60,7 @@ class Trainer:
                     train_neg_y = torch.zeros(train_neg_edge_index.size(1), device=self.device)
                     train_y = torch.cat([train_pos_y, train_neg_y], dim=0)
                     edge_index = torch.cat([edge_index, train_neg_edge_index], dim=1)
-                    #打乱顺序
+                    
                     arr = list(range(0, train_y.size(0)))
                     random.shuffle(arr)
                     train_y = train_y[arr]
@@ -88,7 +88,7 @@ class Trainer:
                 eval_neg_y = torch.zeros(eval_neg_edge_index.size(1), device=self.device)
                 eval_y = torch.cat([eval_pos_y, eval_neg_y], dim=0)
                 edge_index = torch.cat([edge_index, eval_neg_edge_index], dim=1)
-                #打乱顺序
+                
                 arr = list(range(0, eval_y.size(0)))
                 random.shuffle(arr)
                 eval_y = eval_y[arr]
@@ -103,7 +103,7 @@ class Trainer:
                 '''
                     Calculate Valid NDCG. Update the best model based on highest NDCG score.
                 '''
-                #准确率计算AUC指标
+                
 
                 valid_AUC = roc_auc_score(eval_y.cpu().numpy(), np.where(torch.sigmoid(res.squeeze()).cpu().numpy()>0.5,1,0))
                 if valid_AUC > best_val:
@@ -126,13 +126,13 @@ class Trainer:
     
     @torch.no_grad()
     def test(self):
-        best_model = torch.load(os.path.join(args.model_dir, args.task_name+ '_' + str(args.use_pretrain) + '_' + args.conv_name)).to(self.device)
+        best_model = torch.load(os.path.join(args.model_dir, args.task_name+ '_' + str(args.use_pretrain) + '_' + args.conv_name), weights_only=False).to(self.device)
         best_model.eval()
         gnn, linkpre = best_model
         test_res = []
         self.test_graph = Graph_test(args, self.device)
         #self.graph = Graph(args, 15, self.device)
-        for _ in range(10):#10次测试的平均值
+        for _ in range(5):#5次测试的平均值
             test_data =  self.test_graph.NC_sample('test', self.test_graph.c)
             node_feature, node_type, edge_time, edge_index, edge_type, x_ids, ylabel, samp_nodes = test_data
             node_rep = gnn.forward(node_feature, node_type, edge_time, edge_index, edge_type)
@@ -142,7 +142,7 @@ class Trainer:
             test_neg_y = torch.zeros(test_neg_edge_index.size(1), device=self.device)
             test_y = torch.cat([test_pos_y, test_neg_y], dim=0) 
             edge_index = torch.cat([edge_index, test_neg_edge_index], dim=1)
-            #打乱顺序
+            
             arr =list(range(0, test_y.size(0)))
             random.shuffle(arr)
             test_y = test_y[arr]

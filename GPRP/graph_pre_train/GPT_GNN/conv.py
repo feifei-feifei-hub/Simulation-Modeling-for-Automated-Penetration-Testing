@@ -7,7 +7,6 @@ from torch_geometric.nn.conv import MessagePassing
 from torch_geometric.nn.inits import glorot, uniform
 from torch_geometric.utils import softmax
 import math
-#定义预测用的卷积函数，没有修改
 class HGTConv(MessagePassing):
     def __init__(self, in_dim, out_dim, num_types, num_relations, n_heads, dropout = 0.2, use_norm = True, use_RTE = True, **kwargs):
         super(HGTConv, self).__init__(node_dim=0, aggr='add', **kwargs)
@@ -52,7 +51,7 @@ class HGTConv(MessagePassing):
         
     def forward(self, node_inp, node_type, edge_index, edge_type, edge_time):
         return self.propagate(edge_index, node_inp=node_inp, node_type=node_type, \
-                              edge_type=edge_type, edge_time = edge_time)#传播函数
+                              edge_type=edge_type, edge_time = edge_time)
 
     def message(self, edge_index_i, node_inp_i, node_inp_j, node_type_i, node_type_j, edge_type, edge_time):
         '''
@@ -71,17 +70,17 @@ class HGTConv(MessagePassing):
             v_linear = self.v_linears[source_type] 
             for target_type in range(self.num_types):
                 tb = (node_type_i == int(target_type)) & sb
-                q_linear = self.q_linears[target_type]# 线性
+                q_linear = self.q_linears[target_type]#
                 for relation_type in range(self.num_relations):
                     '''
-                        idx is all the edges with meta relation <source_type, relation_type, target_type>idx是元关系<source_type，relation_type，target_type>的所有边
+                        idx is all the edges with meta relation <source_type, relation_type, target_type><source_type，relation_type，target_type>
                     '''
-                    idx = (edge_type == int(relation_type)) & tb#指定的target_type和制定的relation_type
+                    idx = (edge_type == int(relation_type)) & tb
                     if idx.sum() == 0:
                         continue
                     '''
-                        Get the corresponding input node representations by idx.通过idx获取相应的输入节点表示。
-                        Add tempotal encoding to source representation (j)将临时编码添加到源表示（j）
+                        Get the corresponding input node representations by idx.
+                        Add tempotal encoding to source representation (j)
 
 
                     '''
@@ -89,19 +88,19 @@ class HGTConv(MessagePassing):
                     source_node_vec = self.emb(node_inp_j[idx], edge_time[idx])
 
                     '''
-                        Step 1: Heterogeneous Mutual Attention共有注意力
+                        Step 1: Heterogeneous Mutual 
                     '''
-                    q_mat = q_linear(target_node_vec).view(-1, self.n_heads, self.d_k)#view()相当于reshape、resize，重新调整Tensor的形状。一个参数定为-1，代表自动调整这个维度上的元素个数，以保证元素的总数不变。
+                    q_mat = q_linear(target_node_vec).view(-1, self.n_heads, self.d_k)
                     k_mat = k_linear(source_node_vec).view(-1, self.n_heads, self.d_k)
-                    k_mat = torch.bmm(k_mat.transpose(1,0), self.relation_att[relation_type]).transpose(1,0)#torch.bmm()两个tensor的矩阵乘法
+                    k_mat = torch.bmm(k_mat.transpose(1,0), self.relation_att[relation_type]).transpose(1,0)
                     res_att[idx] = (q_mat * k_mat).sum(dim=-1) * self.relation_pri[relation_type] / self.sqrt_dk
                     '''
-                        Step 2: Heterogeneous Message Passing信息传递
+                        Step 2: Heterogeneous Message Passing
                     '''
                     v_mat = v_linear(source_node_vec).view(-1, self.n_heads, self.d_k)
                     res_msg[idx] = torch.bmm(v_mat.transpose(1,0), self.relation_msg[relation_type]).transpose(1,0)   
         '''
-            Softmax based on target node's id (edge_index_i). Store attention value in self.att for later visualization.Softmax基于目标节点的id（edge_index_i）。将注意力值存储在self.att中，以便日后可视化。
+            Softmax based on target node's id (edge_index_i). Store attention value in self.att for later visualization.
         '''
         self.att = softmax(res_att, edge_index_i)
         res = res_msg * self.att.view(-1, self.n_heads, 1)
@@ -111,10 +110,10 @@ class HGTConv(MessagePassing):
 
     def update(self, aggr_out, node_inp, node_type):
         '''
-            Step 3: Target-specific Aggregation#特定于目标的聚合
+            Step 3: Target-specific Aggregation#
             x = W[node_type] * gelu(Agg(x)) + x
         '''
-        aggr_out = F.gelu(aggr_out)#高斯误差线性单元激活函数
+        aggr_out = F.gelu(aggr_out)
         res = torch.zeros(aggr_out.size(0), self.out_dim).to(node_inp.device)
         for target_type in range(self.num_types):
             idx = (node_type == int(target_type))
@@ -137,7 +136,7 @@ class HGTConv(MessagePassing):
             self.num_types, self.num_relations)
 
 
-class RelTemporalEncoding(nn.Module):#时间编码
+class RelTemporalEncoding(nn.Module):
     '''
         Implement the Temporal Encoding (Sinusoid) function.
     '''
