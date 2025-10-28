@@ -83,8 +83,8 @@ You can use the following command to install these packages: `pip install -r req
   - Set network parameters and static/dynamic network parameters (for dynamic networks, also set the termination time).
   - Run the script: `python authentic_tree.py`
 
-### (4) Evaluate Datasets Using Link Prediction
-- **Datasets Preprocessing**: `GPRP/preprocess.py`
+### (4) Preliminary Evaluation Using Link Prediction
+- **Preprocessing**: `GPRP/preprocess.py`
 - **Pretrain**: `GPRP/pretrain.py`
 - **Fintune and Test the Model**: `GPRP/eval/finetune_link.py`
 

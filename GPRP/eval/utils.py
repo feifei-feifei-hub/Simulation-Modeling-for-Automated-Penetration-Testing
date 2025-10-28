@@ -23,7 +23,7 @@ def configure():
     parser.add_argument('--data_dir', type=str, default='data/', help='The address of preprocessed graph.')
     parser.add_argument('--use_pretrain', type=int, default=1)
     parser.add_argument('--pretrain_model_dir', type=str, default=f'GPRP/models/pre_model/{model_name}', help='The address for pretrained model.')
-    parser.add_argument('--model_dir', type=str, default='../models/fin_node',
+    parser.add_argument('--model_dir', type=str, default='GPRP/models/fin_node',
                         help='The address for storing the models and optimization results.')
     parser.add_argument('--task_name', type=str, default='node', help='The name of the stored models and optimization results.')
     parser.add_argument('--cuda', type=int, default=3, help='Avaiable GPU ID')
@@ -81,7 +81,7 @@ def configure_link():
     parser.add_argument('--data_dir', type=str, default='data/', help='The address of preprocessed graph.')
     parser.add_argument('--use_pretrain', type=int, default=1)
     parser.add_argument('--pretrain_model_dir', type=str, default=f'GPRP/models/pre_model/{model_name}', help='The address for pretrained model.')
-    parser.add_argument('--model_dir', type=str, default='../models/fin_link',
+    parser.add_argument('--model_dir', type=str, default='GPRP/models/fin_link',
                         help='The address for storing the models and optimization results.')
     parser.add_argument('--task_name', type=str, default='link', help='The name of the stored models and optimization results.')
     parser.add_argument('--cuda', type=int, default=3, help='Avaiable GPU ID')     
@@ -131,7 +131,7 @@ def iiiiconfigure():
     parser.add_argument('--data_dir', type=str, default='newdata/', help='The address of preprocessed graph.')
     parser.add_argument('--use_pretrain', type=int, default=1)
     parser.add_argument('--pretrain_model_dir', type=str, default=f'GPRP/models/pre_model/{model_name}', help='The address for pretrained model.')
-    parser.add_argument('--model_dir', type=str, default='../models/fin_node',
+    parser.add_argument('--model_dir', type=str, default='GPRP/models/fin_node',
                         help='The address for storing the models and optimization results.')
     parser.add_argument('--task_name', type=str, default='node', help='The name of the stored models and optimization results.')
     parser.add_argument('--cuda', type=int, default=3, help='Avaiable GPU ID')
@@ -188,7 +188,7 @@ def iiiiconfigure_link():
     parser.add_argument('--data_dir', type=str, default='newdata/', help='The address of preprocessed graph.')
     parser.add_argument('--use_pretrain', type=int, default=1)
     parser.add_argument('--pretrain_model_dir', type=str, default=f'GPRP/models/pre_model/{model_name}', help='The address for pretrained model.')
-    parser.add_argument('--model_dir', type=str, default='../models/fin_link',
+    parser.add_argument('--model_dir', type=str, default='GPRP/models/fin_link',
                         help='The address for storing the models and optimization results.')
     parser.add_argument('--task_name', type=str, default='link', help='The name of the stored models and optimization results.')
     parser.add_argument('--cuda', type=int, default=3, help='Avaiable GPU ID')     
